@@ -2,7 +2,7 @@
 
 ini_set('display_errors', 1);
 
-$config['path'] = '/srv/http/daw-stuff.xyz';
+$config['path'] = dirname(__DIR__);
 
 require "$config[path]/framework/Autoloader.php";
 require "$config[path]/framework/App.php";
