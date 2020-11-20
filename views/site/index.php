@@ -1,6 +1,5 @@
 <?php
 
-// TODO: implement page title
 // TODO: implement translation system
 
 ?>

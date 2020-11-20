@@ -1,10 +1,11 @@
 <?php
 
-// TODO: implement page title
 // TODO: implement translation system
 // TODO: pass the Shop model to display data instead of hardcoing it inside the Cart Model
 
 /* @var $model \models\Cart */
+
+$this->title = 'Tienda';
 
 $count = $model->getItemCount();
 

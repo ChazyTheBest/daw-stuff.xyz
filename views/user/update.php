@@ -1,1 +1,3 @@
 <?php
+
+$this->title = 'Actualizar';

@@ -62,7 +62,7 @@ final class App
             // check if the action exists
             if (in_array($action, $rule['actions']) && $rule['allow'])
             {
-                $method = 'Action' . ucfirst($action);
+                $method = 'action' . ucfirst($action);
 
                 // the action can be performed by both authenticated and non-authenticated users
                 if (in_array('?', $rule['roles']) && in_array('@', $rule['roles']))

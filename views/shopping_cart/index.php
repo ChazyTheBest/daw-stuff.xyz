@@ -1,9 +1,10 @@
 <?php
 
-// TODO: implement page title
 // TODO: implement translation system
 
 /* @var $model \models\Cart */
+
+$this->title = 'Carrito';
 
 $count = $model->getItemCount();
 

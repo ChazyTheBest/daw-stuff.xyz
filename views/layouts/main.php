@@ -15,11 +15,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <title><?= $this->title ?></title>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="/js/form.js"></script>
     <script src="/js/shop.js"></script>
-
-    <title>Daw Stuff</title>
 </head>
 <body>
 
@@ -33,8 +33,8 @@
             <?php
             if ($auth->isLoggedIn())
             {
-                echo '<li><a href="/user/index">User</a><ul><li><a href="/user/update">Update</a></li></ul></li>', "\n",
-                     '<li><a href="/site/logout">Logout</a></li>', "\n";
+                echo '<li><a href="/user/index">Usuario</a><ul><li><a href="/user/update">Actualizar</a></li></ul></li>', "\n",
+                     '<li><a href="/site/logout">Salir</a></li>', "\n";
             }
 
             else

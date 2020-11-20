@@ -4,7 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="94ad4d07-fdd5-4cdf-b2f0-d5e5897a99ea" name="Default Changelist" comment="" />
+    <list default="true" id="94ad4d07-fdd5-4cdf-b2f0-d5e5897a99ea" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/Controller.php" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/Controller.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/framework/App.php" beforeDir="false" afterPath="$PROJECT_DIR$/framework/App.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/layouts/main.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/layouts/main.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/shop/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/shop/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/shopping_cart/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/shopping_cart/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/shopping_cart/thanks.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/shopping_cart/thanks.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/site/error.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/site/error.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/site/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/site/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/site/login.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/site/login.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/user/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/user/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/user/signup.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/user/signup.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/user/update.php" beforeDir="false" afterPath="$PROJECT_DIR$/views/user/update.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -20,6 +34,9 @@
         <option value="JavaScript File" />
       </list>
     </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.4" />
   <component name="ProjectId" id="1ikQ7ngp9fnlVvKqq828LMryclW" />
@@ -76,6 +93,9 @@
       <workItem from="1604077105197" duration="144000" />
       <workItem from="1604673319939" duration="32563000" />
       <workItem from="1604755695741" duration="25163000" />
+      <workItem from="1605018780783" duration="2662000" />
+      <workItem from="1605259802462" duration="612000" />
+      <workItem from="1605260860589" duration="72000" />
     </task>
     <servers />
   </component>

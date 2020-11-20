@@ -1,7 +1,8 @@
 <?php
 
-// TODO: implement page title
 // TODO: implement translation system
+
+$this->title = 'Gracias';
 
 ?>
 <section>

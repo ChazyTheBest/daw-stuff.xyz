@@ -4,6 +4,8 @@
 
 /* @var $model \models\LoginForm */
 
+$this->title = 'Login';
+
 ?>
 <section>
     <h1>Log In</h1>

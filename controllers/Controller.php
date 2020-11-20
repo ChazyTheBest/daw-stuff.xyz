@@ -7,6 +7,7 @@ use framework\UserSession;
 class Controller
 {
     private string $controller;
+    private string $title;
 
     public function __construct(string $string)
     {
@@ -17,6 +18,10 @@ class Controller
     public function render(string $view, array $params = []): string
     {
         $auth = UserSession::getInstance();
+
+        // default title
+        // TODO: move value to config
+        $this->title = 'Daw Stuff';
 
         header('Content-Type: Text/HTML; Charset=UTF-8');
 
