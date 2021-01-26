@@ -30,7 +30,7 @@ abstract class ActiveRecord
         foreach ($properties as $property)
         {
             // never insert/update id neither empty properties
-            if ($property->getName() === 'id' || $property->getName() === 'user_id' || !$property->getValue($this))
+            if ($property->getName() === 'id' || (!$this->new && $property->getName() === 'user_id') || !$property->getValue($this))
                 continue;
 
             if ($this->new)

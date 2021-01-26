@@ -80,10 +80,10 @@ class OrderController extends Controller
     public function actionCreate(): string
     {
         if (!UserSession::getInstance()->isLoggedIn())
-            return $this->redirect('/shoppingCart/signup');
+            return header('Location: /shoppingCart/signup');
 
         if (!isset($_COOKIE['items']))
-            return $this->redirect('/shoppingCart/error');
+            return header('Location: /shoppingCart/error');
 
         $model = new OrderForm();
 
