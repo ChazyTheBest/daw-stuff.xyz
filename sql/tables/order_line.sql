@@ -2,7 +2,7 @@ CREATE TABLE `order_line` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `product_id` int(11) NOT NULL DEFAULT 0,
     `quantity` tinyint(2) NOT NULL DEFAULT 0,
-    `price` decimal(5,2) NOT NULL DEFAULT 0.00,
+    `price` decimal(7,2) NOT NULL DEFAULT 0.00,
     `order_id` int(11) NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     KEY `idx-order_line-product_id` (`product_id`),
