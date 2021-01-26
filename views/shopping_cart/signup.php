@@ -2,13 +2,13 @@
 
 /* @var $model \models\SignupForm */
 
-$this->title = 'Signup';
+$this->title = 'Registrarse';
 
 ?>
 <section>
     <h1><?= $this->title ?></h1>
 
-    <form id="signup" action="/user/signup" method="POST">
+    <form id="signup" action="/shoppingCart/signup" method="POST">
         <?= $model->getFormFields() ?>
 
         <input type="submit" value="Signup">

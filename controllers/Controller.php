@@ -3,15 +3,16 @@
 namespace controllers;
 
 use framework\UserSession;
+use models\Cart;
 
 class Controller
 {
     private string $controller;
     private string $title;
 
-    public function __construct(string $string)
+    public function __construct(string $name)
     {
-        $this->controller = $string;
+        $this->controller = $name;
     }
 
     // TODO: implement a view system
@@ -26,6 +27,7 @@ class Controller
         header('Content-Type: Text/HTML; Charset=UTF-8');
 
         extract($params);
+        $cart = new Cart();
 
         ob_start();
 
@@ -51,5 +53,18 @@ class Controller
             'message' => $msg['msg'],
             'redirect' => $msg['redirect']
         ]);
+    }
+
+    protected function redirect(string $url): string
+    {
+        header('Content-type: application/json');
+        return json_encode([
+            'redirect' => $url
+        ]);
+    }
+
+    protected function getIsAjax(): bool
+    {
+        return (apache_request_headers()['X-Requested-With'] ?? '') === 'XMLHttpRequest';
     }
 }

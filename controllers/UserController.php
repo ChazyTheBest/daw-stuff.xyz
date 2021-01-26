@@ -2,6 +2,10 @@
 
 namespace controllers;
 
+use Exception;
+use models\SignupForm;
+use models\UserInfoForm;
+
 final class UserController extends Controller
 {
     public function __construct()
@@ -9,7 +13,7 @@ final class UserController extends Controller
         parent::__construct('user');
     }
 
-    public function behaviors()
+    public function behaviors(): array
     {
         return
         [
@@ -42,21 +46,46 @@ final class UserController extends Controller
         return $this->render('index');
     }
 
-    // TODO: update username and password
-    public function actionUpdate(): string
+    /**
+     * Displays the welcome page.
+     *
+     * @return mixed
+     */
+    public function actionWelcome(): string
     {
-        // TODO: need a form for this
-        //$model = User();
-
-        return $this->render('update');
+        return $this->render('welcome');
     }
 
-    // TODO: add new entries to the user_list file
+    /**
+     * Displays the signup page and creates a new user.
+     *
+     * @return mixed
+     * @throws Exception
+     */
     public function actionSignup(): string
     {
-        // TODO: need a form for this
-        //$model = User();
+        $model = new SignupForm();
+        if ($model->load($_POST))
+            return $model->signup()
+                ? $this->go([ 'status' => 'success', 'msg' => '', 'redirect' => 'home' ])
+                : $this->go([ 'status' => 'error', 'msg' => 'signup_failed', 'redirect' => '' ]);
 
-        return $this->render('signup');
+        return $this->render('signup', [
+            'model' => $model
+        ]);
+    }
+
+    // TODO: update user info
+    public function actionUpdate(): string
+    {
+        $model = new UserInfoForm();
+        if ($model->load($_POST))
+            return $model->update()
+                ? $this->go([ 'status' => 'success', 'msg' => '', 'redirect' => 'reload' ])
+                : $this->go([ 'status' => 'error', 'msg' => 'update_failed', 'redirect' => '' ]);
+
+        return $this->render('update', [
+            'model' => $model
+        ]);
     }
 }

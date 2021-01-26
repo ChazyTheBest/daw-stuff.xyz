@@ -2,9 +2,13 @@
 
 namespace framework;
 
+use controllers\Controller;
+use models\User;
+
 final class App
 {
-    private array $config;
+    public static array $config;
+    public static ?User $user;
 
     /**
      * App constructor.
@@ -12,30 +16,31 @@ final class App
      */
     public function __construct(array $config)
     {
-        $this->config = $config;
+        Autoloader::register();
+        self::$config = $config;
+        $auth = new UserSession();
+        self::$user = $auth->isLoggedIn() ? User::findById($_SESSION['user_id']) : null;
     }
 
     // this is an attempt to replicate a basic functionality of the Yii2 framework
     public function run(): void
     {
-        Autoloader::register();
-
         // missing routing
         // missing proper controller/model system
         // missing middleware framework
         // hacks incoming :)
 
-        $this->config['httpMethod'] = $_SERVER['REQUEST_METHOD'];
-        $this->config['uri'] = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        self::$config['httpMethod'] = $_SERVER['REQUEST_METHOD'];
+        self::$config['uri'] = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        echo $this->handleRequest($this->config['uri'] === '/' ? '/site/index' : $this->config['uri']);
+        echo $this->handleRequest(self::$config['uri'] === '/' ? '/site/index' : self::$config['uri']);
     }
 
     // TODO: implement allowed methods
-    private function handleRequest(string $resource): ?string
+    private function handleRequest(string $resource): string
     {
         // after this we can get an instance statically
-        $auth = new UserSession($this->config);
+        $auth = UserSession::getInstance();
 
         // split the requested resource into controller and action
         $components = explode('/', $resource);
@@ -44,18 +49,17 @@ final class App
 
         // if the controller does not exist, display an error
         if (!class_exists($c_name))
-            return (new \controllers\Controller('site'))->render('error');
-
-        // if the action is not specified, display an error
-        if (!isset($components[2]))
-            return (new \controllers\Controller('site'))->render('error');
-
-        $controller = new $c_name;
-        $action = $components[2];
+            return (new Controller('site'))->render('error');
 
         // TODO: URI params (ie: /user/view/1 or /user/view/username)
         // TODO: rewrite to short url (ie: /site/index -> /index)
+        $action = $components[2];
 
+        // if the action is not specified, display an error
+        if (!isset($action))
+            return (new Controller('site'))->render('error');
+
+        $controller = new $c_name;
         $behaviors = $controller->behaviors();
         foreach ($behaviors['access']['rules'] as $rule)
         {
@@ -66,7 +70,7 @@ final class App
 
                 // the action can be performed by both authenticated and non-authenticated users
                 if (in_array('?', $rule['roles']) && in_array('@', $rule['roles']))
-                    return $controller->$method($components[3] ?? null);
+                    return $controller->$method($components[3] ?? null); // WIP
 
                 // the action requires that the user is not authenticated
                 if (in_array('?', $rule['roles']) && !$auth->isLoggedIn())
@@ -74,7 +78,7 @@ final class App
 
                 // the action requires that the user is authenticated
                 if (in_array('@', $rule['roles']) && $auth->isLoggedIn())
-                    return $controller->$method();
+                    return $controller->$method($components[3] ?? null);
 
                 else
                 {
@@ -87,6 +91,12 @@ final class App
         }
 
         // the action does not exist, or is not valid, therefore display an error message
-        return (new \controllers\Controller('site'))->render('error');
+        return (new Controller('site'))->render('error');
+    }
+
+    // TODO: implement file-based translations
+    public static function t(string $cat, string $name): string
+    {
+        return '';
     }
 }

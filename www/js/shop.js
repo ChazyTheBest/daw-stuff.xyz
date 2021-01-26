@@ -28,7 +28,7 @@ $(function ()
                 if (data.msg)
                     alert(data.msg)
 
-                else
+                else if (data.redirect)
                     window.location.replace(data.redirect);
             },
             error: function(jqXHR, errMsg)

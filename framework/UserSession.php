@@ -9,12 +9,11 @@ final class UserSession
 
     /**
      * AuthSystem constructor.
-     * @param array $config
      */
-    public function __construct(array $config)
+    public function __construct()
     {
         self::$instance = $this;
-        $this->session($config['domain'], $config['session']);
+        $this->session(App::$config['domain'], App::$config['session']);
         $this->isLoggedIn = isset($_SESSION['user_id'], $_SESSION['IS_LOGGED_IN']) && $_SESSION['IS_LOGGED_IN'] === TRUE;
         $this->enhanceHttpSecurity();
     }
@@ -52,9 +51,9 @@ final class UserSession
             // session started more than 30 minutes ago
             session_regenerate_id(TRUE);    // regenerate the session ID and delete the old one
             $_SESSION['CREATED'] = $time;                  // update creation time
-
-            if ( ($time - $_SESSION['CREATED']) > $session['logout_time'] )
-                $_SESSION['IS_LOGGED_IN'] = $this->isLoggedIn = FALSE;
+/*
+            if ( $session['logout_time'] > 0 && ($time - $_SESSION['CREATED']) > $session['logout_time'] )
+                $_SESSION['IS_LOGGED_IN'] = $this->isLoggedIn = FALSE;*/
         }
     }
 

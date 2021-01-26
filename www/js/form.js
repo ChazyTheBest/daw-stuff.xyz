@@ -11,7 +11,8 @@ $(function ()
             success: function (data)
             {
                 // for colourness styled alert data.status === 'success
-                if (data.message !== '')
+                console.log(data.message)
+                if (data.message !== undefined && data.message !== '')
                     alert(data.message)
 
                 if (data.redirect === 'home')
@@ -22,6 +23,9 @@ $(function ()
 
                 else if (data.redirect === 'reload')
                     window.location.reload(true)
+
+                else if (data.redirect !== '')
+                    window.location.replace(data.redirect);
             },
             error: function(jqXHR, errMsg)
             {

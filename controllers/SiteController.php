@@ -14,7 +14,7 @@ final class SiteController extends Controller
         parent::__construct('site');
     }
 
-    public function behaviors()
+    public function behaviors(): array
     {
         return
         [
@@ -66,6 +66,8 @@ final class SiteController extends Controller
             return $model->login()
                 ? $this->go([ 'status' => 'success', 'msg' => '', 'redirect' => 'home' ])
                 : $this->go([ 'status' => 'error', 'msg' => 'login_failed', 'redirect' => '' ]);
+
+        //$model->password = '';
 
         return $this->render('login', [
             'model' => $model

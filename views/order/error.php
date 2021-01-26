@@ -9,6 +9,6 @@ $this->title = '404 Not Found';
 
     <h1><?= $this->title ?></h1>
 
-    <p>Page not found</p>
+    <p>There was a problem with your order, please try again later.</p>
 
 </section>

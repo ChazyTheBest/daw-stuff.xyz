@@ -9,6 +9,6 @@ $this->title = '404 Not Found';
 
     <h1><?= $this->title ?></h1>
 
-    <p>Page not found</p>
+    <p>The product does not exist.</p>
 
 </section>

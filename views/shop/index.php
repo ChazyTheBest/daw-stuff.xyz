@@ -1,31 +1,48 @@
 <?php
 
 // TODO: implement translation system
-// TODO: pass the Shop model to display data instead of hardcoing it inside the Cart Model
 
-/* @var $model \models\Cart */
+/* @var $cats array */
+/* @var $pagination array */
 
 $this->title = 'Tienda';
 
-$count = $model->getItemCount();
+$total = $pagination['total'];
+$limit = $pagination['limit'];
+$pages = $pagination['pages'];
+$page = $pagination['page'];
+$offset = $pagination['offset'];
+$products = $pagination['products'];
+
+$prevlink = ($page > 1) ? '<a href="?page=1" title="First page">&laquo;</a> <a href="?page=' . ($page - 1) . '" title="Previous page">&lsaquo;</a>' : '<span class="disabled">&laquo;</span> <span class="disabled">&lsaquo;</span>';
+$nextlink = ($page < $pages) ? '<a href="?page=' . ($page + 1) . '" title="Next page">&rsaquo;</a> <a href="?page=' . $pages . '" title="Last page">&raquo;</a>' : '<span class="disabled">&rsaquo;</span> <span class="disabled">&raquo;</span>';
 
 ?>
 <section>
-    <h1>Mi Tienda</h1>
+    <h1><?= $this->title ?></h1>
 
-    <p><?= $count > 0 ? "Llevas <span id='count'>$count</span> articulos seleccionados." : 'El carrito está vacio.' ?></p>
+    <aside>
+        <ul>
+<?php
+$html = '            ';
+foreach ($cats as $cat)
+{
+    echo $html, '<li><a href="/shop/index/', $cat['id'], '">', $cat['name'], '</a></li>', "\n";
+}
+?>
+        </ul>
+    </aside>
 
-    <table>
-        <thead>
-            <th>Referencia</th>
-            <th>Descripción</th>
-            <th>Precio</th>
-            <th></th>
-        </thead>
-        <tbody>
-            <?= $model->getItems() ?>
-        </tbody>
-    </table>
+    <article>
+        <p>There are <?= $total ?> products.</p>
+<?php
+$html = '        ';
+foreach ($products as $product)
+{
+    echo $html, '<a href="/product/index/', $product['id'], '"><figure><img src="/img/products/', $product['image'], '" alt=""><figcaption><p>', $product['name'],'</p></figcaption></figure></a>', "\n\n";
+}
 
-    <a href="/shoppingCart/index">Ver el carrito</a>
+echo $html, '<div id="paging"><p>', $prevlink, ' Page ', $page, ' of ', $pages, ' ', $nextlink, ' </p><p>displaying ', ($offset + 1), '-', min(($offset + $limit), $total), ' of ', $total, ' results</p></div>';
+?>
+    </article>
 </section>

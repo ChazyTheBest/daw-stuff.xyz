@@ -2,71 +2,112 @@
 
 namespace models;
 
+//use framework\UserSession;
+use framework\ActiveRecord;
+
 /**
  * Cart Model.
  */
-final class Cart extends Model
+final class Cart// extends ActiveRecord
 {
-    private array $dataSource;
-
-    public function __construct()
+    // adds or removes by allowing negative numbers
+    public function addItem(int $id, int $quantity): void
     {
-        parent::__construct($this);
+        if (1===2/*UserSession::getInstance()->isLoggedIn()*/)
+        {
+            // TODO: add to db
+            // missing user_cart entity
+        }
 
-        $this->dataSource =
-        [
-            'ref1' => [ 'desc' => 'Descripción Artículo 1', 'price' => 5 ],
-            'ref2' => [ 'desc' => 'Descripción Artículo 2', 'price' => 3.3 ],
-            'ref3' => [ 'desc' => 'Descripción Artículo 3', 'price' => 2 ],
-        ];
+        else
+        {
+            $cookie = $_COOKIE['items'][$id] ?? false;
+            if ($cookie && ($cookie + $quantity) > 0)
+                $quantity += $cookie;
+
+            setcookie("items[$id]", $quantity, time() + 3600, '/');  /* expire in 1 hour */
+        }
     }
 
-    // TODO: replace $_SESSION with a more appropriate storage
-    // for example a mysql database
-    public function addItem(string $ref): void
+    public function setItemQuantity(int $id, int $quantity): void
     {
-        if (!isset($this->dataSource[$ref]))
-            return;
+        if (1===2/*UserSession::getInstance()->isLoggedIn()*/)
+        {
+            // TODO: add to db
+            // missing user_cart entity
+        }
 
-        if (!isset($_COOKIE['items'][$ref]))
-            setcookie("items[$ref]", 1, time() + 3600, '/');  /* expire in 1 hour */
+        else
+        {
+            $cookie = $_COOKIE['items'][$id] ?? false;
+            if ($cookie && $quantity > 0)
+                setcookie("items[$id]", $quantity, time() + 3600, '/');  /* expire in 1 hour */
+        }
     }
 
-    public function getItems(): string
+    public function deleteItem(int $id): void
     {
-        $items = '';
+        if (1===2/*UserSession::getInstance()->isLoggedIn()*/)
+        {
+            // TODO: remove from db
+            // missing user_cart entity
+        }
 
-        foreach ($this->dataSource as $key => $val)
-            $items .= "<tr>\n<td>$key</td>\n<td>$val[desc]</td>\n<td>$val[price]</td>\n<td><a class='buy' href='/shoppingCart/add/$key'>Comprar</a></td>\n</tr>\n";
+        else
+        {
+            if (!isset($_COOKIE['items'][$id]))
+                return;
 
-        return $items;
+            //unset($_COOKIE['items'][$id]);
+            setcookie("items[$id]", '', time() - 3600, '/');
+        }
     }
 
     public function getItemCount(): int
     {
-        return isset($_COOKIE['items']) ? count($_COOKIE['items']) : 0;
+        $count = 0;
+
+        if (1===2/*UserSession::getInstance()->isLoggedIn()*/)
+        {
+            // TODO: get from db
+            // missing user_cart entity
+        }
+
+        else
+        {
+            $count = isset($_COOKIE['items']) ? array_sum($_COOKIE['items']) : 0;
+        }
+
+        return $count;
     }
 
-    // DRY!!!
-    public function getCartItems(): string
+    public function moveCartToDB()
     {
-        $items = '';
+        // todo
+    }
 
+    public function getCartItems(): array
+    {
         if (!isset($_COOKIE['items']))
-            return '';
+            return [];
+
+        $ids = [];
 
         foreach ($_COOKIE['items'] as $key => $val)
-            $items .= "<tr>\n<td>$key</td>\n<td>$val</td>\n</tr>\n";
+            $ids[] = $key;
 
-        return $items;
+        return Product::findManyById($ids);
     }
 
     public function processCart(): void
     {
         if (isset($_COOKIE['items']))
-        {
-            foreach ($_COOKIE['items'] as $key => $val)
-                setcookie("items[$key]", '', time() - 3600, '/');
-        }
+            $this->emptyCart();
+    }
+
+    private function emptyCart(): void
+    {
+        foreach ($_COOKIE['items'] as $key => $val)
+            setcookie("items[$key]", '', time() - 3600, '/');
     }
 }

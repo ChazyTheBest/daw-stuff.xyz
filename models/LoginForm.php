@@ -2,68 +2,85 @@
 
 namespace models;
 
+use framework\App;
+
 final class LoginForm extends Model
 {
-    private string $username;
-    private string $password;
+    public string $email;
+    public string $password;
 
+    private ?User $_user = null;
 
-    /**
-     * LoginForm constructor.
-     */
-    public function __construct()
+    public function rules(): array
     {
-        parent::__construct($this);
+        return [
+            // email and password are both required
+            [['email', 'password'], 'required'],
+            // password is validated by validatePassword()
+            ['password', 'validatePassword'],
+        ];
     }
 
+    public function attributeLabels(): array
+    {
+        return [
+            'email' => App::t('form', 'l_email'),
+            'password' => App::t('form', 'l_pwd')
+        ];
+    }
+
+    /**
+     * Validates the password.
+     * This method serves as the inline validation for password.
+     *
+     * @param string $password the password currently being validated
+     * @return bool whether the user password is valid or not
+     */
+    public function validatePassword(string $password): bool
+    {
+        if (!($user = $this->getUser()))
+            return false;
+
+        return $user->validatePassword($password);
+    }
+
+    /**
+     * Logs in a user using the provided username and password.
+     *
+     * @return bool whether the user is logged in successfully
+     */
     public function login(): bool
     {
-        $user_list = require dirname(__DIR__) . '/config/user_list.php';
+        if (!$this->validate())
+            return false;
 
-        if (isset($user_list[$this->username]) && $user_list[$this->username] === $this->password)
-        {
-            $this->loginSuccessful(array_search($this->username, $user_list));
+        $this->loginSuccessful($this->getUser()->id);
 
-            return true;
-        }
+        return true;
+    }
 
-        return false;
+    public function loginWithoutPassword(int $id)
+    {
+        $this->loginSuccessful($id);
     }
 
     private function loginSuccessful(int $id): void
     {
         $_SESSION['user_id'] = $id;
         $_SESSION['IS_LOGGED_IN'] = TRUE;
-        $_SESSION['username'] = $this->username;
+        //$_SESSION['email'] = $this->email;
     }
 
-    // TODO: move this to Model
-    public function getFormFields(): string
+    /**
+     * Finds user by [[email]]
+     *
+     * @return User|null
+     */
+    protected function getUser(): ?User
     {
-        $fields = '';
+        if (!$this->_user)
+            $this->_user = User::findByEmail($this->email);
 
-        foreach(get_class_vars(get_class($this)) as $key => $value)
-        {
-            $fields .= '<label for="' . $key . '">' . ucfirst($key) . '</label>' . "\n";
-            $fields .= '<input id="' . $key . '" type="' . ($key === 'password' ? $key : 'text') . '" name="' . explode('\\', get_class($this))[1] . "[$key]" . '">' . "\n";
-        }
-
-        $fields .= '<input type="submit" value="Login">' . "\n";
-
-        return $fields;
-    }
-
-    // TODO: move this to Model
-    public function populate(array $data): bool
-    {
-        foreach(get_class_vars(get_class($this)) as $key => $value)
-        {
-            if (!isset($data[$key]))
-                return false;
-
-            $this->$key = $data[$key];
-        }
-
-        return true;
+        return $this->_user;
     }
 }
