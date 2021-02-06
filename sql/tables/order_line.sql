@@ -1,6 +1,6 @@
 CREATE TABLE `order_line` (
     `product_id` int(11) NOT NULL DEFAULT 0,
-    `quantity` tinyint(2) NOT NULL DEFAULT 0,
+    `quantity` tinyint(3) NOT NULL DEFAULT 0,
     `price` decimal(11,2) NOT NULL DEFAULT 0.00,
     `order_id` int(11) NOT NULL DEFAULT 0,
     PRIMARY KEY (`product_id`,`order_id`),

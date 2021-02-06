@@ -1,6 +1,6 @@
 CREATE TABLE `user_cart` (
     `product_id` int(11) NOT NULL DEFAULT 0,
-    `quantity` tinyint(2) NOT NULL DEFAULT 0,
+    `quantity` tinyint(3) NOT NULL DEFAULT 0,
     `created_by` int(11) NOT NULL,
     PRIMARY KEY (`product_id`,`created_by`),
     KEY `idx-user_cart-created_by` (`created_by`),
