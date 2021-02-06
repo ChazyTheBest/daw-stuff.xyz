@@ -2,7 +2,9 @@
 
 namespace models;
 
-class Product extends \framework\ActiveRecord
+use framework\ActiveRecord;
+
+class Product extends ActiveRecord
 {
     public int $id;
     public string $name;
@@ -21,14 +23,19 @@ class Product extends \framework\ActiveRecord
         return 'product';
     }
 
+    public static function updateCond(): array
+    {
+        return [ 'product', [ 'id' ] ];
+    }
+
     /**
      * Finds products by category
      *
      * @param int $cat_id
      * @param int $page
-     * @return static|null
+     * @return array
      */
-    public static function findByCategory(int $cat_id, int $page)
+    public static function findByCategory(int $cat_id, int $page): array
     {
         return parent::findAll([
             'category_id' => $cat_id
@@ -39,9 +46,9 @@ class Product extends \framework\ActiveRecord
      * Finds products by id
      *
      * @param array $id
-     * @return static|null
+     * @return array|null
      */
-    public static function findManyById(array $id)
+    public static function findManyById(array $id): array
     {
         return parent::findAll([
             'id' => $id
@@ -52,9 +59,9 @@ class Product extends \framework\ActiveRecord
      * Finds product by id
      *
      * @param int $id
-     * @return static|null
+     * @return ActiveRecord
      */
-    public static function findById(int $id): ?Product
+    public static function findById(int $id): ActiveRecord
     {
         return parent::findOne([
             'id' => $id

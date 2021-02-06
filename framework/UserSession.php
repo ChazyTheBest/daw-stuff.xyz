@@ -51,9 +51,9 @@ final class UserSession
             // session started more than 30 minutes ago
             session_regenerate_id(TRUE);    // regenerate the session ID and delete the old one
             $_SESSION['CREATED'] = $time;                  // update creation time
-/*
+
             if ( $session['logout_time'] > 0 && ($time - $_SESSION['CREATED']) > $session['logout_time'] )
-                $_SESSION['IS_LOGGED_IN'] = $this->isLoggedIn = FALSE;*/
+                $_SESSION['IS_LOGGED_IN'] = $this->isLoggedIn = FALSE;
         }
     }
 

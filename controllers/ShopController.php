@@ -2,7 +2,6 @@
 
 namespace controllers;
 
-use models\Cart;
 use models\Category;
 use models\Product;
 

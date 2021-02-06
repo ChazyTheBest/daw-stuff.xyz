@@ -3,7 +3,7 @@
 return
 [
     'domain' => 'daw-stuff.xyz',
-    'session' => [ 'id' => 'php_ses_id', 'lifetime' => 300, 'secure' => FALSE, 'logout_time' => 3600 ],
+    'session' => [ 'id' => 'php_ses_id', 'lifetime' => 0, 'secure' => FALSE, 'logout_time' => 3600 ],
     'pdo' =>
     [
         'dsn' => 'mysql:unix_socket=/run/mysqld/mysqld.sock;dbname=shop;charset=utf8mb4',
@@ -14,4 +14,9 @@ return
             PDO::ATTR_EMULATE_PREPARES  => FALSE                    // ALWAYS! ALWAYS! ALWAYS!
         ]
     ],
+    'pagination' =>
+    [
+        'limit' => 8
+    ],
+    'cart' => [ 'cookie_expires' => 0 ]
 ];

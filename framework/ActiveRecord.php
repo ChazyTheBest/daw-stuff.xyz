@@ -11,11 +11,13 @@ abstract class ActiveRecord
     private PDO $pdo;
     private bool $new = true;
     private string $tableName;
+    private array $updateCond;
 
     public function __construct()
     {
         $this->pdo = MyPDO::getPDO();
         $this->tableName = static::tableName();
+        $this->updateCond = static::updateCond();
     }
 
     // TODO: check for changes before updating
@@ -29,19 +31,20 @@ abstract class ActiveRecord
         $properties = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
         foreach ($properties as $property)
         {
-            // never insert/update id neither empty properties
-            if ($property->getName() === 'id' || (!$this->new && $property->getName() === 'user_id') || !$property->getValue($this))
+            $name = $property->getName();
+            // never insert/update id or update conditions nor null properties
+            if ($name === 'id' || (!$this->new && in_array($name, $this->updateCond[1])) || !$property->getValue($this))
                 continue;
 
             if ($this->new)
             {
-                $query .= '`' . $property->getName() . '`, ';
+                $query .= '`' . $name . '`, ';
                 $values .= '?, ';
             }
 
             else
             {
-                $query .= '`' . $property->getName() . '` = ?, ';
+                $query .= '`' . $name . '` = ?, ';
             }
 
             $params[] = $property->getValue($this);
@@ -55,14 +58,17 @@ abstract class ActiveRecord
             $query .= "$values)";
         }
 
-        else
+        else if ($this->tableName === $this->updateCond[0])
         {
-            // todo check relations
-            if ($this->tableName === 'user_info')
+            $query .= ' WHERE ';
+
+            foreach ($this->updateCond[1] as $col)
             {
-                $query .= ' WHERE user_id = ?';
-                $params[] = App::$user->id;
+                $query .= "`$col` = ? AND ";
+                $params[] = $this->$col;
             }
+
+            $query = substr($query, 0, -5);
         }
 
         $stmt = $this->pdo->prepare($query);
@@ -75,12 +81,16 @@ abstract class ActiveRecord
         return true;
     }
 
-    public function delete(): void
+    public function delete(array $cond): void
     {
-        if (!$this->id)
+        $query = "DELETE FROM `$this->tableName`";
+
+        if ($cond === [])
             return;
 
-        $this->pdo->query("DELETE FROM `$this->tableName` WHERE `id` = $this->id");
+        $stuff = self::where($cond);
+
+        $this->pdo->prepare($query . $stuff[0])->execute($stuff[1]);
     }
 
     public function close(): void
@@ -91,122 +101,182 @@ abstract class ActiveRecord
         $this->pdo->query("UPDATE `$this->tableName` SET `status` = 0 WHERE `id` = $this->id");
     }
 
-    public function hasOne(string $className, array $relations)
-    {
-        // has one
-    }
-
-    public function hasMany()
-    {
-        // has many
-    }
-
-    protected static function findOne(array $cond)
-    {
-        return self::find($cond);
-    }
-
-    protected static function findAll(array $cond, int $page = 0)
-    {
-        return self::find($cond, true, $page);
-    }
-
-    private static function find(array $cond, bool $all = false, int $page = 0)
+    protected static function count(array $cond = [], string $cols = '*'): int
     {
         $pdo = MyPDO::getPDO();
-        $className = static::class;
-        $query = 'SELECT * FROM `' . static::tableName() . '`';
-        $cQuery = 'SELECT COUNT(*) FROM `' . static::tableName() . '`';
+        $query = "SELECT COUNT($cols) FROM `" . static::tableName() . '`';
         $params = [];
-        $data = null;
 
         if ($cond !== [])
         {
-            $build = ' WHERE ';
-
-            foreach ($cond as $key => $value)
+            if (isset($cond['build']) && is_array($cond['build']))
             {
-                $build .= self::where($key, $value) . ' AND ';
-
-                if (is_array($value))
-                    $params = array_merge($params, $value);
-
-                else
-                    $params[] = $value;
+                $query .= $cond['build'][0];
+                $params = $cond['build'][1];
             }
 
-            $build = substr($build, 0, -5);
-            // build final query
-            $query = $query . $build;
-        }
-
-        if ($page > 0)
-        {
-            $cStmt = $pdo->prepare($cQuery . $build ?? '');
-            $cStmt->execute($params);
-            $total = $cStmt->fetchColumn();
-            // TODO: hardcoded value
-            $limit = 8;
-            $offset = ($page - 1) * $limit;
-            // build final query
-            $query = $query . " LIMIT $limit OFFSET $offset";
+            else
+            {
+                $stuff = self::where($cond);
+                $query .= $stuff[0];
+                $params = $stuff[1];
+            }
         }
 
         $stmt = $pdo->prepare($query);
         $stmt->execute($params);
 
-        if ($all)
+        return $stmt->fetchColumn();
+    }
+
+    protected static function sum(string $cols, array $cond = []): int
+    {
+        $pdo = MyPDO::getPDO();
+        $query = "SELECT SUM($cols) FROM `" . static::tableName() . '`';
+        $params = [];
+
+        if ($cond !== [])
         {
-            if ($stmt->rowCount() < 1)
-                return null;
-
-            // fetch mode?
-
-            $data = $page > 0 ? [
-                'total' => $total,
-                'limit' => $limit,
-                'pages' => ceil($total / $limit),
-                'page' => $page,
-                'offset' => $offset,
-                'products' => $stmt->fetchAll()
-            ] : $stmt->fetchAll();
+            $stuff = self::where($cond);
+            $query .= $stuff[0];
+            $params = $stuff[1];
         }
 
-        else
-        {
-            if ($stmt->rowCount() !== 1)
-                return null;
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
 
-            $stmt->setFetchMode(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, $className);
+        return $stmt->fetchColumn() ?? 0;
+    }
 
-            $data = $stmt->fetch();
-            $data->new = false;
-        }
+    protected static function findOne(array $cond): ?ActiveRecord
+    {
+        $pdo = MyPDO::getPDO();
+        $query = 'SELECT * FROM `' . static::tableName() . '`';
+
+        if ($cond === [])
+            return null;
+
+        $stuff = self::where($cond);
+        $query .= $stuff[0];
+        $params = $stuff[1];
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params ?? []);
+
+        if ($stmt->rowCount() !== 1)
+            return null;
+
+        $stmt->setFetchMode(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::class);
+
+        $data = $stmt->fetch();
+        $data->new = false;
 
         return $data;
     }
 
-    private static function where(string $key, $value): string
+    protected static function findAll(array $cond = [], int $page = 0): array
+    {
+        $pdo = MyPDO::getPDO();
+        $query = 'SELECT * FROM `' . static::tableName() . '`';
+
+        if ($cond !== [])
+        {
+            $stuff = self::where($cond);
+            $query .= $stuff[0];
+            $params = $stuff[1];
+        }
+
+        if ($page > 0)
+        {
+            $total = self::count(isset($stuff[0]) ? ([ 'build' => [ $stuff[0], $stuff[1] ] ]) : []);
+            $limit = App::$config['pagination']['limit'];
+            $offset = ($page - 1) * $limit;
+            // build final query
+            $query .= " LIMIT $limit OFFSET $offset";
+        }
+
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params ?? []);
+
+        if ($stmt->rowCount() < 1)
+            return [];
+
+        return $page > 0 ? [
+            'total' => $total,
+            'limit' => $limit,
+            'pages' => ceil($total / $limit),
+            'page' => $page,
+            'offset' => $offset,
+            'products' => $stmt->fetchAll() // fetch mode?
+        ] : $stmt->fetchAll();
+    }
+
+    protected function custom(array $data, int $fetch_mode = PDO::ATTR_DEFAULT_FETCH_MODE): array
     {
         $query = '';
 
-        if (is_array($value))
+        if (isset($data['select']))
         {
-            $query .= '`' . $key . '` IN(';
-
-            for ($i = 0; $i < count($value); $i++)
+            $query .= 'SELECT ';
+            foreach ($data['select'] as $column)
             {
-                $query .= '?,';
+                $query .= "`$column`, ";
             }
 
-            $query = substr($query, 0, -1) . ')';
+            $query = substr($query, 0, -2) . " FROM `$this->tableName`";
         }
 
-        else
+        if (isset($data['cond']) && $data['cond'] !== [])
         {
-            $query .= '`' . $key . '` = ?';
+            $stuff = self::where($data['cond']);
+            $query .= $stuff[0];
+            $params = $stuff[1];
         }
 
-        return $query;
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute($params ?? []);
+
+        if ($stmt->rowCount() < 1)
+            return [];
+
+        return $stmt->fetchAll($fetch_mode);
+    }
+
+    private static function where(array $cond): array
+    {
+        $where = ' WHERE ';
+        $params = [];
+
+        foreach ($cond as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $where .= '`' . $key . '` IN(';
+
+                for ($i = 0; $i < count($value); $i++)
+                {
+                    $where .= '?,';
+                    $params[] = $value[$i];
+                }
+
+                $where = substr($where, 0, -1) . ')';
+            }
+
+            else
+            {
+                $where .= '`' . $key . '` = ?';
+                $params[] = $value;
+            }
+
+            $where .= ' AND ';
+        }
+
+        return [ substr($where, 0, -5), $params ];
+    }
+
+    public static abstract function tableName(): string;
+    public static function updateCond(): array
+    {
+        return [ '', [] ];
     }
 }

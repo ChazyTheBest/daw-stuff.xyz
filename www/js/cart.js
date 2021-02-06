@@ -15,25 +15,26 @@ $(function ()
     $( 'input.update' ).on( 'change' , function (e)
     {
         const that = $( this ),
-              oldValue = that.data('old-value');
+              oldVal = parseInt(that.data('old-value')),
+              val = parseInt(that.val());
 
         let url = that.data('url'),
             ajax = {};
 
         // up/down buttons
-        if (this.value === (oldValue + 1))
+        if (val === (oldVal + 1))
         {
             ajax = { url: url + '?op=up', type: 'GET' }
         }
 
-        else if (this.value === (oldValue - 1))
+        else if (val === (oldVal - 1))
         {
             ajax = { url: url + '?op=down', type: 'GET' }
         }
 
-        else if (this.value !== oldValue)
+        else if (val !== oldVal)
         {
-            ajax = { url: url, type: 'POST', data: { quantity: this.value } }
+            ajax = { url: url, type: 'POST', data: { quantity: val } }
         }
 
         else

@@ -1,9 +1,9 @@
 CREATE TABLE `order` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
     `reference` char(9) COLLATE utf8mb4_unicode_ci NOT NULL,
-    `shipping_price` decimal(5,2) NOT NULL DEFAULT 0.00,
-    `taxes` decimal(6,2) NOT NULL DEFAULT 0.00,
-    `total` decimal(6,2) NOT NULL DEFAULT 0.00,
+    `shipping_price` decimal(6,2) NOT NULL DEFAULT 0.00,
+    `taxes` decimal(65,2) NOT NULL DEFAULT 0.00,
+    `total` decimal(65,2) NOT NULL DEFAULT 0.00,
     `payment` tinyint(1) DEFAULT NULL,
     `paypal_order_id` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `paypal_transaction_id` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,

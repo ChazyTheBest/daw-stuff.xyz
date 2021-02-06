@@ -63,10 +63,30 @@ final class SiteController extends Controller
     {
         $model = new LoginForm();
         if ($model->load($_POST))
-            return $model->login()
-                ? $this->go([ 'status' => 'success', 'msg' => '', 'redirect' => 'home' ])
-                : $this->go([ 'status' => 'error', 'msg' => 'login_failed', 'redirect' => '' ]);
+        {
+            $msg = '';
+            $redirect = '';
 
+            if ($model->login())
+            {
+                $status = 'success';
+                $redirect = 'home';
+            }
+
+            else
+            {
+                $status = 'error';
+                $msg = 'login_failed';
+            }
+
+            return $this->go([
+                'status' => $status,
+                'msg' => $msg,
+                'redirect' => $redirect
+            ]);
+        }
+
+        // is this really necessary?
         //$model->password = '';
 
         return $this->render('login', [

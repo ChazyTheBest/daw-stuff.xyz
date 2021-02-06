@@ -6,13 +6,15 @@ use framework\App;
 
 class OrderForm extends Model
 {
-    public ?int $payment = null;
+    public int $payment;
 
     public function rules(): array
     {
         return [
-            ['payment', 'required'],
-            ['payment', 'integer', 'matches' => [Order::PAYMENT_BANK, Order::PAYMENT_CREDIT_CARD, Order::PAYMENT_PAYPAL]],
+            [ 'payment', 'required' ],
+            [ 'payment', 'integer', 'matches' => [ Order::PAYMENT_BANK,
+                                                   Order::PAYMENT_CREDIT_CARD,
+                                                   Order::PAYMENT_PAYPAL ] ],
         ];
     }
 

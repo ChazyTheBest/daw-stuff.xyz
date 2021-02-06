@@ -5,10 +5,11 @@ namespace controllers;
 use Exception;
 use framework\App;
 use framework\UserSession;
-use models\Cart;
+use models\BrowserCart;
 use models\Order;
 use models\OrderForm;
 use models\OrderLine;
+use models\UserCart;
 
 class OrderController extends Controller
 {
@@ -32,8 +33,14 @@ class OrderController extends Controller
                     ],
                     [
                         'allow' => true,
-                        'actions' => [ 'index', 'view' ],
+                        'actions' => [ 'index' ],
                         'roles' => [ '@' ]
+                    ],
+                    [
+                        'allow' => true,
+                        'actions' => [ 'view' ],
+                        'roles' => [ 'client', 'staff', 'admin' ],
+                        'roleCheck' => [ Order::class, 'findById' ]
                     ],
                     [
                         'allow' => true,
@@ -65,8 +72,13 @@ class OrderController extends Controller
      */
     public function actionView(int $id): string
     {
+        $model = Order::findById($id);
+
+        if (!$model)
+            return $this->render('error');
+
         return $this->render('view', [
-            'model' => Order::findById($id),
+            'model' => $model,
             'lines' => new OrderLine()
         ]);
     }
@@ -80,10 +92,7 @@ class OrderController extends Controller
     public function actionCreate(): string
     {
         if (!UserSession::getInstance()->isLoggedIn())
-            return header('Location: /shoppingCart/signup');
-
-        if (!isset($_COOKIE['items']))
-            return header('Location: /shoppingCart/error');
+            return header('Location: /shoppingCart/signup'); // todo find a more elegant way
 
         $model = new OrderForm();
 
@@ -92,12 +101,15 @@ class OrderController extends Controller
             if (!$model->load($_POST) || !$model->payment)
                 return $this->redirect('/order/error');
 
-            $cart = new Cart();
-            $cartItems = $cart->getCartItems();
+            $cart = new UserCart();
+            $data = $cart->getCartItems();
+            $cartItems = $data['items'];
+            $cartProducts = $data['products'];
             $total = 0;
-            foreach ($cartItems as $item)
+
+            foreach ($cartProducts as $product)
             {
-                $total += ($item['price'] * $_COOKIE['items'][$item['id']]);
+                $total += ($product['price'] * $cartItems[$product['id']]);
             }
 
             $order = new Order();
@@ -116,25 +128,27 @@ class OrderController extends Controller
             $order->created_by = App::$user->id;
 
             if (!$order->save() || !$order->id)
-                return $this->redirect('/order/error');
+                return $this->redirect('/order/error3');
 
-            for ($i = 0; $i < count($cartItems); $i++)
+            foreach ($cartProducts as $product)
             {
-                $$i = new OrderLine();
-                $$i->product_id = $cartItems[$i]['id'];
-                $$i->quantity = $_COOKIE['items'][$cartItems[$i]['id']];
-                $$i->price = $cartItems[$i]['price'] * $$i->quantity;
-                $$i->order_id = $order->id;
-                if (!$$i->save())
-                    return $this->redirect('/order/error');
+                $line = new OrderLine();
+                $line->product_id = $product['id'];
+                $line->quantity = $cartItems[$product['id']];
+                $line->price = $product['price'] * $line->quantity;
+                $line->order_id = $order->id;
+                if (!$line->save())
+                    return $this->redirect('/order/error2');
             }
+
+            $cart->emptyCart();
 
             return $this->redirect('/shoppingCart/thanks');
         }
 
         return $this->render('create', [
             'model' => $model,
-            'cart' => new Cart()
+            'cart' => new BrowserCart($_COOKIE['items'] ?? [])
         ]);
     }
 }

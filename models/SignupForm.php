@@ -96,7 +96,7 @@ class SignupForm extends Model
 
         // login the user
         if ($this->scenario === self::SCENARIO_CART)
-            (new LoginForm())->loginWithoutPassword($user->id);
+            (new LoginForm())->loginWithoutPassword($user);
 
         return true;
     }

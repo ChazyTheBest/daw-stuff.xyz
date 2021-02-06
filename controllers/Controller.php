@@ -3,7 +3,8 @@
 namespace controllers;
 
 use framework\UserSession;
-use models\Cart;
+use models\BrowserCart;
+use models\UserCart;
 
 class Controller
 {
@@ -27,7 +28,7 @@ class Controller
         header('Content-Type: Text/HTML; Charset=UTF-8');
 
         extract($params);
-        $cart = new Cart();
+        $cart = UserSession::getInstance()->isLoggedIn() ? new UserCart() : new BrowserCart($_COOKIE['items'] ?? []);
 
         ob_start();
 

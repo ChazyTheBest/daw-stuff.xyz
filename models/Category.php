@@ -2,7 +2,9 @@
 
 namespace models;
 
-class Category extends \framework\ActiveRecord
+use framework\ActiveRecord;
+
+class Category extends ActiveRecord
 {
     public int $id;
     public string $name;
@@ -18,13 +20,18 @@ class Category extends \framework\ActiveRecord
         return 'category';
     }
 
+    public static function updateCond(): array
+    {
+        return [ 'category', [ 'id' ] ];
+    }
+
     /**
      * Finds category by id
      *
      * @param int $id
-     * @return static|null
+     * @return ActiveRecord
      */
-    public static function findById(int $id): ?Category
+    public static function findById(int $id): ActiveRecord
     {
         return parent::findOne([
             'id' => $id
@@ -34,9 +41,9 @@ class Category extends \framework\ActiveRecord
     /**
      * Get all categories
      *
-     * @return static|null
+     * @return array
      */
-    public static function getAll()
+    public static function getAll(): array
     {
         return parent::findAll([]);
     }

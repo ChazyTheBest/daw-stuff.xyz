@@ -3,7 +3,6 @@
 namespace models;
 
 use framework\ActiveRecord;
-use framework\App;
 
 /**
  * This is the model class for table "user_info".
@@ -36,7 +35,12 @@ final class UserInfo extends ActiveRecord
         return 'user_info';
     }
 
-    public static function findById(int $id)
+    public static function updateCond(): array
+    {
+        return [ 'user_info', [ 'user_id' ] ];
+    }
+
+    public static function findById(int $id): ActiveRecord
     {
         return self::findOne([ 'user_id' => $id ]);
     }

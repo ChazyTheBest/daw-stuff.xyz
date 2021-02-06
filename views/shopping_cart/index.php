@@ -2,7 +2,7 @@
 
 // TODO: implement translation system
 
-/* @var $model \models\Cart */
+/* @var $model \models\BrowserCart|\models\UserCart */
 
 $this->title = 'Carrito';
 
@@ -12,29 +12,33 @@ $this->title = 'Carrito';
 
     <table>
         <thead>
-            <th>Nombre</th>
-            <th>Unidades</th>
-            <th>Precio</th>
-            <th></th>
+            <tr>
+                <th>Nombre</th>
+                <th>Unidades</th>
+                <th>Precio</th>
+                <th></th>
+            </tr>
         </thead>
         <tbody>
 <?php
 $total = 0;
-foreach ($model->getCartItems() as $item)
+$data = $model->getCartItems();
+$items = $data['items'];
+foreach ($data['products'] as $product)
 {
-    $quantity = $_COOKIE['items'][$item['id']];
-    $price = $item['price'] * $quantity;
+    $quantity = $items[$product['id']];
+    $price = $product['price'] * $quantity;
     $total += $price;
     echo "<tr>
-    <td>$item[name]</td>
+    <td>$product[name]</td>
     <td>
-        <input type='hidden' id='unit-price-$item[id]' value='$item[price]'>
-        <input class='update' type='number' min='1' data-url='/shoppingCart/update/$item[id]'
-                                                    data-item-id='$item[id]'
+        <input type='hidden' id='unit-price-$product[id]' value='$product[price]'>
+        <input class='update' type='number' min='1' data-url='/shoppingCart/update/$product[id]'
+                                                    data-item-id='$product[id]'
                                                     data-old-value='$quantity' value='$quantity'>
     </td>
     <td>$price</td>
-    <td><a class='delete' href='/shoppingCart/delete/$item[id]'>Delete</a></td>
+    <td><a class='delete' href='/shoppingCart/delete/$product[id]'>Delete</a></td>
 </tr>";
 }
 ?>

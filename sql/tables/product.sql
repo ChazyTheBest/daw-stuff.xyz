@@ -3,7 +3,7 @@ CREATE TABLE `product` (
     `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     `description` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     `image` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'name.png',
-    `price` decimal(6,2) NOT NULL DEFAULT 0.00,
+    `price` decimal(8,2) NOT NULL DEFAULT 0.00,
     `discount` decimal(4,3) NOT NULL DEFAULT 0.000,
     `category_id` int(11) NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),

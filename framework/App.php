@@ -51,7 +51,6 @@ final class App
         if (!class_exists($c_name))
             return (new Controller('site'))->render('error');
 
-        // TODO: URI params (ie: /user/view/1 or /user/view/username)
         // TODO: rewrite to short url (ie: /site/index -> /index)
         $action = $components[2];
 
@@ -76,12 +75,30 @@ final class App
                 if (in_array('?', $rule['roles']) && !$auth->isLoggedIn())
                     return $controller->$method();
 
-                // the action requires that the user is authenticated
-                if (in_array('@', $rule['roles']) && $auth->isLoggedIn())
+                // the action requires that the user is authenticated and authorized
+                if ($auth->isLoggedIn())
+                {
+                    if (in_array(App::$user->role, $rule['roles']))
+                    {
+                        // check ownership
+                        if (App::$user->role === 'client' && isset($rule['roleCheck']))
+                        {
+                            $model = $rule['roleCheck'][0]::{$rule['roleCheck'][1]}($components[3] ?? 0);
+                            if (!$model || $model->created_by !== App::$user->id)
+                                return (new Controller('site'))->render('error');   // TODO not authorized
+                        }
+                    }
+
+                    else if (!in_array('@', $rule['roles']))
+                        return (new Controller('site'))->render('error');           // TODO not authorized
+
+                    // else fix controller rules
+
                     return $controller->$method($components[3] ?? null);
+                }
 
                 else
-                {
+                {   // TODO check this and switch to html render
                     header('Content-type: application/json');
                     return json_encode([
                         'msg' => 'You need to be authenticated to perform this action'

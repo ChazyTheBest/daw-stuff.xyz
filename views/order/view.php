@@ -7,6 +7,7 @@
 
 use models\Order;
 use models\OrderLine;
+use models\Product;
 
 $this->title = 'Order Details';
 
@@ -21,15 +22,17 @@ $statusList = [
 
     <table>
         <thead>
-            <th>Name</th>
-            <th>Units</th>
-            <th>Price</th>
+            <tr>
+                <th>Name</th>
+                <th>Units</th>
+                <th>Price</th>
+            </tr>
         </thead>
         <tbody>
 <?php
-foreach ($lines->getOrderLines($model->id) as $item)
+foreach ($lines->getByOrderId($model->id) as $item)
 {
-    $name = \models\Product::findById($item['id'])->name;
+    $name = Product::findById($item['product_id'])->name;
     echo "<tr><td>$name</td><td>$item[quantity]</td><td>$item[price]</td></tr>";
 }
 ?>

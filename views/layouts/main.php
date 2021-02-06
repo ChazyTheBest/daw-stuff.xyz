@@ -1,12 +1,11 @@
 <?php
 
-// TODO: implement page title
 // TODO: implement translation system
 // TODO: implement asset loading
 
 /* @var $content string */
 /* @var $auth \framework\UserSession */
-/* @var $cart \models\Cart */
+/* @var $cart \models\BrowserCart */
 
 $count = $cart->getItemCount();
 

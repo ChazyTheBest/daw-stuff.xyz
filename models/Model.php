@@ -2,8 +2,6 @@
 
 namespace models;
 
-use framework\App;
-
 abstract class Model
 {
     protected string $formName;

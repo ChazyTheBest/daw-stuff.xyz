@@ -73,13 +73,36 @@ final class User extends ActiveRecord
         return password_verify($password, $this->password_hash);
     }
 
+    public function moveCart(): void
+    {
+        // move cart items from cookie to permanent storage
+        if (isset($_COOKIE['items']))
+        {
+            foreach ($_COOKIE['items'] as $id => $quantity)
+            {
+                if ($id < 1 || !Product::findById($id))
+                    continue;
+
+                $model = new UserCart();
+                $model->product_id = $id;
+                $model->quantity = $quantity ?? 1;
+                $model->created_by = $this->id;
+
+                if ($model->quantity > 0 && $model->quantity < 1000)
+                    $model->save();
+            }
+
+            (new BrowserCart($_COOKIE['items']))->emptyCart();
+        }
+    }
+
     /**
      * Finds user by email
      *
      * @param string $email
-     * @return static|null
+     * @return ActiveRecord
      */
-    public static function findByEmail(string $email): ?User
+    public static function findByEmail(string $email): ?ActiveRecord
     {
         return parent::findOne([
             'email' => $email,
@@ -91,9 +114,9 @@ final class User extends ActiveRecord
      * Finds user by id
      *
      * @param int $id
-     * @return static|null
+     * @return ActiveRecord
      */
-    public static function findById(int $id): ?User
+    public static function findById(int $id): ActiveRecord
     {
         return parent::findOne([
             'id' => $id,

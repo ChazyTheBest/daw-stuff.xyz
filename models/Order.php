@@ -45,13 +45,18 @@ final class Order extends ActiveRecord
         return 'order';
     }
 
+    public static function updateCond(): array
+    {
+        return [ 'order', [ 'id', 'created_by' ] ];
+    }
+
     /**
      * Finds order by id
      *
      * @param int $id
-     * @return static|null
+     * @return ActiveRecord
      */
-    public static function findById(int $id): ?Order
+    public static function findById(int $id): ActiveRecord
     {
         return parent::findOne([
             'id' => $id
@@ -62,9 +67,9 @@ final class Order extends ActiveRecord
      * Finds order by reference
      *
      * @param string $reference
-     * @return static|null
+     * @return ActiveRecord
      */
-    public static function findByReference(string $reference): ?Order
+    public static function findByReference(string $reference): ?ActiveRecord
     {
         return parent::findOne([
             'reference' => $reference

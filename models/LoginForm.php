@@ -2,6 +2,7 @@
 
 namespace models;
 
+use framework\ActiveRecord;
 use framework\App;
 
 final class LoginForm extends Model
@@ -54,29 +55,31 @@ final class LoginForm extends Model
         if (!$this->validate())
             return false;
 
-        $this->loginSuccessful($this->getUser()->id);
+        $this->loginSuccessful($this->getUser());
 
         return true;
     }
 
-    public function loginWithoutPassword(int $id)
+    public function loginWithoutPassword(User $user)
     {
-        $this->loginSuccessful($id);
+        $this->loginSuccessful($user);
     }
 
-    private function loginSuccessful(int $id): void
+    private function loginSuccessful(User $user): void
     {
-        $_SESSION['user_id'] = $id;
+        $_SESSION['user_id'] = $user->id;
         $_SESSION['IS_LOGGED_IN'] = TRUE;
         //$_SESSION['email'] = $this->email;
+
+        $user->moveCart();
     }
 
     /**
      * Finds user by [[email]]
      *
-     * @return User|null
+     * @return ActiveRecord|null
      */
-    protected function getUser(): ?User
+    protected function getUser(): ?ActiveRecord
     {
         if (!$this->_user)
             $this->_user = User::findByEmail($this->email);
