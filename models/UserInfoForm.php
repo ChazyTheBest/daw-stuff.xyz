@@ -39,27 +39,12 @@ class UserInfoForm extends Model
         ];
     }
 
-    // TODO: implement FormActive Class
-    public function getFormFields(): string
-    {
-        $fields = '';
-        $info = UserInfo::findById(App::$user->id);
-
-        foreach($this->attributeLabels() as $key => $value)
-        {
-            $fields .= "<label for=\"$key\">$value</label>\n";
-            $fields .= "<input id=\"$key\" type=\"text\" placeholder=\"$key\" name=\"$this->formName[$key]\" value='{$info->$key}'>\n";
-        }
-
-        return $fields;
-    }
-
-    public function update(): bool
+    public function update(int $id = null): bool
     {
         if (!$this->validate())
             return false;
 
-        $model = UserInfo::findById(App::$user->id);
+        $model = UserInfo::findById($id ?? App::$user->id);
         $model->name = $this->name;
         $model->surname = $this->surname;
         $model->address_1 = $this->address_1;

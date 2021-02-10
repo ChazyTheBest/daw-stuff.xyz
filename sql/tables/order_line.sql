@@ -1,6 +1,6 @@
 CREATE TABLE `order_line` (
     `product_id` int(11) NOT NULL DEFAULT 0,
-    `quantity` tinyint(3) NOT NULL DEFAULT 0,
+    `quantity` smallint(3) NOT NULL DEFAULT 0,
     `price` decimal(11,2) NOT NULL DEFAULT 0.00,
     `order_id` int(11) NOT NULL DEFAULT 0,
     PRIMARY KEY (`product_id`,`order_id`),
@@ -9,3 +9,32 @@ CREATE TABLE `order_line` (
     CONSTRAINT `fk-order_line-product_id` FOREIGN KEY (`product_id`) REFERENCES `product` (`id`) ON DELETE NO ACTION,
     CONSTRAINT `fk-order_line-order_id` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`) ON DELETE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `order_line` (`product_id`, `quantity`, `price`, `order_id`) VALUES
+(1, 3, 370.35, 1),
+(2, 2, 246.90, 1),
+(3, 3, 370.35, 1),
+(1, 3, 370.35, 2),
+(2, 2, 246.90, 2),
+(3, 3, 370.35, 2),
+(1, 3, 370.35, 3),
+(2, 2, 246.90, 3),
+(3, 3, 370.35, 3),
+(1, 3, 370.35, 4),
+(2, 2, 246.90, 4),
+(3, 3, 370.35, 4),
+(1, 3, 370.35, 5),
+(2, 2, 246.90, 5),
+(3, 3, 370.35, 5),
+(1, 3, 370.35, 6),
+(2, 2, 246.90, 6),
+(3, 3, 370.35, 6),
+(1, 3, 370.35, 7),
+(2, 2, 246.90, 7),
+(3, 3, 370.35, 7),
+(1, 3, 370.35, 8),
+(2, 2, 246.90, 8),
+(3, 3, 370.35, 8),
+(1, 3, 370.35, 9),
+(2, 2, 246.90, 9),
+(3, 3, 370.35, 9);

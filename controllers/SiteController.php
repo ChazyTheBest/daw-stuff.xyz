@@ -2,6 +2,7 @@
 
 namespace controllers;
 
+use framework\App;
 use models\LoginForm;
 
 final class SiteController extends Controller
@@ -63,28 +64,9 @@ final class SiteController extends Controller
     {
         $model = new LoginForm();
         if ($model->load($_POST))
-        {
-            $msg = '';
-            $redirect = '';
-
-            if ($model->login())
-            {
-                $status = 'success';
-                $redirect = 'home';
-            }
-
-            else
-            {
-                $status = 'error';
-                $msg = 'login_failed';
-            }
-
-            return $this->go([
-                'status' => $status,
-                'msg' => $msg,
-                'redirect' => $redirect
-            ]);
-        }
+            return $model->login()
+                ? $this->redirect('home')
+                : $this->inform(App::t('error', 'login_failed'));
 
         // is this really necessary?
         //$model->password = '';

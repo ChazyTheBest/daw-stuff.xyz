@@ -3,6 +3,7 @@
 namespace models;
 
 use framework\ActiveRecord;
+use framework\App;
 
 /**
  * Order Model.
@@ -21,14 +22,15 @@ final class Order extends ActiveRecord
     public int $created_at;
     public int $created_by;
 
-    const STATUS_PENDING = 0;
-    const STATUS_AWAITING = 1;
-    const STATUS_DECLINED = 2;
-    const STATUS_COMPLETED = 3;
-    const STATUS_SHIPPED = 4;
-    const STATUS_DELIVERED = 5;
-    const STATUS_PARTIALLY_REFUNDED = 6;
-    const STATUS_REFUNDED = 7;
+    const STATUS_DELETED = 0;
+    const STATUS_PENDING = 1;
+    const STATUS_AWAITING = 2;
+    const STATUS_DECLINED = 3;
+    const STATUS_COMPLETED = 4;
+    const STATUS_SHIPPED = 5;
+    const STATUS_DELIVERED = 6;
+    const STATUS_PARTIALLY_REFUNDED = 7;
+    const STATUS_REFUNDED = 8;
 
     const RETURN_TIME = 1296000; // 15 days
 
@@ -56,7 +58,7 @@ final class Order extends ActiveRecord
      * @param int $id
      * @return ActiveRecord
      */
-    public static function findById(int $id): ActiveRecord
+    public static function findById(int $id): ?ActiveRecord
     {
         return parent::findOne([
             'id' => $id
@@ -76,6 +78,14 @@ final class Order extends ActiveRecord
         ]);
     }
 
+    public static function getList(): array
+    {
+        return (new Order())->custom([
+            'select' => [ 'id', 'reference', 'total', 'status', 'created_at', 'created_by' ],
+            'order' => [ 'id' ]
+        ]);
+    }
+
     /**
      * Get orders by created_by
      *
@@ -85,7 +95,42 @@ final class Order extends ActiveRecord
     public function getUserOrders(int $id): ?array
     {
         return parent::findAll([
-            'created_by' => $id
+            'created_by' => $id,
+            'operator' => [ 'status', '<>', Order::STATUS_DELETED ]
         ]);
+    }
+
+    public function checkStatus(int $status): bool
+    {
+        return in_array($status, [
+            Order::STATUS_PENDING,
+            Order::STATUS_AWAITING,
+            Order::STATUS_DECLINED,
+            Order::STATUS_COMPLETED,
+            Order::STATUS_SHIPPED,
+            Order::STATUS_DELIVERED,
+            Order::STATUS_PARTIALLY_REFUNDED,
+            Order::STATUS_REFUNDED
+        ]);
+    }
+
+    public function setStatus(int $status): void
+    {
+        $this->status($status);
+    }
+
+    public static function getStatusList(): array
+    {
+        return [
+            Order::STATUS_DELETED => App::t('table', 'td_status_0'),
+            Order::STATUS_PENDING => App::t('table', 'td_status_1'),
+            Order::STATUS_AWAITING => App::t('table', 'td_status_2'),
+            Order::STATUS_DECLINED => App::t('table', 'td_status_3'),
+            Order::STATUS_COMPLETED => App::t('table', 'td_status_4'),
+            Order::STATUS_SHIPPED => App::t('table', 'td_status_5'),
+            Order::STATUS_DELIVERED => App::t('table', 'td_status_6'),
+            Order::STATUS_PARTIALLY_REFUNDED => App::t('table', 'td_status_7'),
+            Order::STATUS_REFUNDED => App::t('table', 'td_status_8')
+        ];
     }
 }

@@ -1,16 +1,20 @@
 <?php
 
-/* @var $model \models\SignupForm */
+/* @var $model SignupForm */
 
-$this->title = 'Registrarse';
+use models\SignupForm;
+
+$this->title = 'Signup';
 
 ?>
-<section>
-    <h1><?= $this->title ?></h1>
+    <section class="bg-light p-4">
 
-    <form id="signup" action="/shoppingCart/signup" method="POST">
-        <?= $model->getFormFields() ?>
+        <h1><?= $this->title ?></h1>
 
-        <input type="submit" value="Signup">
-    </form>
-</section>
+        <form id="signup" action="/shoppingCart/signup" method="POST">
+            <?= $model->getFormFields() ?>
+
+            <input type="submit" value="Signup">
+        </form>
+
+    </section>

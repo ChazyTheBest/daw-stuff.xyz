@@ -43,13 +43,6 @@ final class ShoppingCartController extends Controller
                         'roles' => [ '?' ]
                     ]
                 ]
-            ],
-            'verbs' =>
-            [
-                'actions' =>
-                    [
-                        'logout' => [ 'post' ]
-                    ]
             ]
         ];
     }
@@ -61,34 +54,26 @@ final class ShoppingCartController extends Controller
      */
     public function actionIndex(): string
     {
-        if (UserSession::getInstance()->isLoggedIn())
-        {
-            $model = new UserCart();
-        }
-
-        else
-        {
-            $model = new BrowserCart($_COOKIE['items'] ?? []);
-        }
         return $this->render('index', [
-            'model' => $model
+            'model' => UserSession::getInstance()->isLoggedIn()
+                ? new UserCart()
+                : new BrowserCart($_COOKIE['items'] ?? [])
         ]);
     }
 
-    public function actionAdd(int $id): string
+    public function actionAdd(?int $id): string
     {
-        header('Content-type: application/json');
-
         if (!$this->getIsAjax())
-            return json_encode([ 'message' => 'This action only supports XMLHttpRequest.' ]);
+            return $this->error('405', [
+                'message' => App::t('error', '405_ajax')
+            ]);
 
         if ($id < 1 || !Product::findById($id))
-            return json_encode([ 'message' => 'The product does not exist.' ]);
+            return $this->inform(App::t('error', '404_product'));
 
         if (UserSession::getInstance()->isLoggedIn())
         {
             $model = UserCart::findById($id);
-
             if (!$model)
             {
                 $model = new UserCart();
@@ -97,7 +82,7 @@ final class ShoppingCartController extends Controller
                 $model->created_by = App::$user->id;
             }
 
-            else
+            else if ($model instanceof UserCart)
             {
                 $model->quantity += $_POST['quantity'] ?? 1;
             }
@@ -112,30 +97,27 @@ final class ShoppingCartController extends Controller
             $model->addItem($id, $_POST['quantity'] ?? 1);
         }
 
-        return json_encode([
-            'redirect' => 'reload'
-        ]);
+        return $this->redirect('reload');
     }
 
-    public function actionUpdate(int $id): string
+    public function actionUpdate(?int $id): string
     {
-        header('Content-type: application/json');
-
         if (!$this->getIsAjax())
-            return json_encode([ 'message' => 'This action only supports XMLHttpRequest.' ]);
+            return $this->error('405', [
+                'message' => App::t('error', '405_ajax')
+            ]);
 
         if ($id < 1 || !Product::findById($id))
-            return json_encode([ 'message' => 'The product does not exist.' ]);
+            return $this->inform(App::t('error', '404_product'));
 
         if (UserSession::getInstance()->isLoggedIn())
         {
             $model = UserCart::findById($id);
-
-            if (!$model)
-                return json_encode([ 'message' => 'You cannot update a product that is not in your cart.' ]);
+            if (!$model && !$model instanceof UserCart)
+                return json_encode([ 'message' => App::t('error', 'cart_not_found') ]);
 
             $data = $_GET['op'] ?? $_POST['quantity'] ?? false;
-            if ($data && $model instanceof UserCart)
+            if ($data)
             {
                 if ($data === 'up' || $data === 'down')
                 {
@@ -168,30 +150,26 @@ final class ShoppingCartController extends Controller
             }
         }
 
-        return json_encode([
-            'redirect' => 'redirect'
-        ]);
+        return $this->redirect('reload');
     }
 
-    public function actionDelete(int $id): string
+    public function actionDelete(?int $id): string
     {
-        header('Content-type: application/json');
-
         if (!$this->getIsAjax())
-            return json_encode([ 'message' => 'This action only supports XMLHttpRequest.' ]);
+            return $this->error('405', [
+                'message' => App::t('error', '405_ajax')
+            ]);
 
         if ($id < 1 || !Product::findById($id))
-            return json_encode([ 'message' => 'The product does not exist.' ]);
+            return $this->inform(App::t('error', '404_product'));
 
         if (UserSession::getInstance()->isLoggedIn())
         {
             $model = UserCart::findById($id);
+            if (!$model && !$model instanceof UserCart)
+                return $this->inform(App::t('error', 'cart_not_found'));
 
-            if (!$model)
-                return json_encode([ 'message' => 'The product is not in your cart.' ]);
-
-            if ($model instanceof UserCart)
-                $model->deleteItem();
+            $model->deleteItem();
         }
 
         else
@@ -200,9 +178,7 @@ final class ShoppingCartController extends Controller
             $model->deleteItem($id);
         }
 
-        return json_encode([
-            'redirect' => 'redirect'
-        ]);
+        return $this->redirect('reload');
     }
 
     public function actionSignup(): string
@@ -211,8 +187,8 @@ final class ShoppingCartController extends Controller
         $model->scenario = SignupForm::SCENARIO_CART;
         if ($model->load($_POST))
             return $model->signupWithInfo()
-                ? $this->go([ 'status' => 'success', 'msg' => '', 'redirect' => '/order/create' ])
-                : $this->go([ 'status' => 'error', 'msg' => 'signup_failed', 'redirect' => '' ]);
+                ? $this->redirect('/order/create')
+                : $this->inform(App::t('error', 'signup_failed'));
 
         return $this->render('signup', [
             'model' => $model

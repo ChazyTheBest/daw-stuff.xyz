@@ -3,13 +3,19 @@
 namespace models;
 
 use framework\ActiveRecord;
+use framework\App;
 
 class Category extends ActiveRecord
 {
     public int $id;
-    public string $name;
-    public string $image;
-    public string $description;
+    public ?string $name = null;
+    public ?string $image = null;
+    public ?string $description = null;
+    public ?int $category_id = null;
+    public ?int $status = null;
+
+    const STATUS_DELETED = 0;
+    const STATUS_ACTIVE = 1;
 
 
     /**
@@ -31,7 +37,7 @@ class Category extends ActiveRecord
      * @param int $id
      * @return ActiveRecord
      */
-    public static function findById(int $id): ActiveRecord
+    public static function findById(int $id): ?ActiveRecord
     {
         return parent::findOne([
             'id' => $id
@@ -41,10 +47,24 @@ class Category extends ActiveRecord
     /**
      * Get all categories
      *
+     * @param int|null $id
      * @return array
      */
-    public static function getAll(): array
+    public static function getAll(int $id = null): array
     {
-        return parent::findAll([]);
+        return self::findAll([
+            'category_id' => $id,
+            'status' => Category::STATUS_ACTIVE
+        ]);
+    }
+
+    public static function getList(): array
+    {
+        $cat = App::t('app', 'category');
+        $sub = App::t('app', 'subcategory');
+
+        return (new Category())->custom([
+            'select' => [ '`id`', '`name`', '`image`', "IF(`category_id` IS NULL, '$cat', '$sub') as type", '`status`' ]
+        ]);
     }
 }

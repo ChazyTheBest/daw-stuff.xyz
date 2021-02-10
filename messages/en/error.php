@@ -1,0 +1,45 @@
+<?php
+
+return [
+    // HTTP error codes
+    '401_default' => 'You need to be authenticated in order to view this page.',
+    '403_default' => 'You\'re not authorized to view this page.',
+    '404_default' => 'The page you\'re looking for does not exist.',
+    '404_user' => 'The user does not exist.',
+    '404_category' => 'The category does not exist.',
+    '404_product' => 'The product does not exist.',
+    '404_order' => 'The order does not exist.',
+    '405_ajax' => 'This action only supports XMLHttpRequest.',
+
+    // custom error
+    'signup_failed' => 'Signup failed. Please, check the input data.',
+    'create_failed' => 'The creation failed. Please, check the input data.',
+    'update_failed' => 'Update failed. Please, check the input data.',
+    'login_failed' => 'Login failed. Please, check your username/password.',
+    'upload_failed' => 'Upload failed. Please check your image.',
+    'order_delete_refund' => 'The order has already been processed and cannot be deleted. Please request a refund.',
+    'order_invalid_status' => 'The status is not valid.',
+    'model_load' => 'There was a problem loading your data.',
+    'cart_not_found' => 'The product is not in your cart.',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => ''
+];

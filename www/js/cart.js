@@ -1,25 +1,28 @@
 $(function ()
 {
-    $( 'a.delete' ).on( 'click', function ()
+    $( 'a.cart_delete' ).on( 'click', function ()
     {
         $.ajax({
             url: this.href,
             type: 'GET',
-            success: reload,
+            success: success,
             error: error
         })
 
         return false;
     })
 
-    $( 'input.update' ).on( 'change' , function (e)
+    $( 'input.cart_update' ).on( 'change' , function (e)
     {
         const that = $( this ),
               oldVal = parseInt(that.data('old-value')),
               val = parseInt(that.val());
 
+        if (val < 1 || val > 999 || val === oldVal)
+            return;
+
         let url = that.data('url'),
-            ajax = {};
+            ajax = { url: url, type: 'POST', data: { quantity: val } };
 
         // up/down buttons
         if (val === (oldVal + 1))
@@ -32,29 +35,9 @@ $(function ()
             ajax = { url: url + '?op=down', type: 'GET' }
         }
 
-        else if (val !== oldVal)
-        {
-            ajax = { url: url, type: 'POST', data: { quantity: val } }
-        }
-
-        else
-        {
-            return;
-        }
-
-        ajax.success = reload;
+        ajax.success = success;
         ajax.error = error;
 
         $.ajax(ajax);
     })
 })
-
-function reload()
-{
-    window.location.reload(true);
-}
-
-function error(jqXHR, errMsg)
-{
-    alert(errMsg);
-}

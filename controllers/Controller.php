@@ -2,6 +2,7 @@
 
 namespace controllers;
 
+use framework\App;
 use framework\UserSession;
 use models\BrowserCart;
 use models\UserCart;
@@ -19,6 +20,9 @@ class Controller
     // TODO: implement a view system
     public function render(string $view, array $params = []): string
     {
+        $components = explode('/', App::$config['uri'] === '/' ? '/site/index' : App::$config['uri']);
+        $controller = $components[1];
+        $action = $components[2];
         $auth = UserSession::getInstance();
 
         // default title
@@ -45,14 +49,21 @@ class Controller
         return $main;
     }
 
-    // TODO: implement error messages
-    protected function go(array $msg): string
+    public function error(string $view, array $params = []): string
+    {
+        $this->controller = 'common/errors';
+
+        if ($params === [])
+            $params = [ 'message' => App::t('error', $view . '_default') ];
+
+        return $this->render($view, $params);
+    }
+
+    protected function inform(string $msg): string
     {
         header('Content-type: application/json');
         return json_encode([
-            'status' => $msg['status'],
-            'message' => $msg['msg'],
-            'redirect' => $msg['redirect']
+            'message' => $msg
         ]);
     }
 

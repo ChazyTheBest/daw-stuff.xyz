@@ -2,7 +2,6 @@
 
 namespace models;
 
-use framework\ActiveRecord;
 use framework\App;
 
 final class LoginForm extends Model
@@ -77,12 +76,15 @@ final class LoginForm extends Model
     /**
      * Finds user by [[email]]
      *
-     * @return ActiveRecord|null
+     * @return User|null
      */
-    protected function getUser(): ?ActiveRecord
+    protected function getUser(): ?User
     {
         if (!$this->_user)
             $this->_user = User::findByEmail($this->email);
+
+        if (!$this->_user instanceof User)
+            return null;
 
         return $this->_user;
     }

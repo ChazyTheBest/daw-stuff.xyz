@@ -33,18 +33,18 @@ abstract class ActiveRecord
         {
             $name = $property->getName();
             // never insert/update id or update conditions nor null properties
-            if ($name === 'id' || (!$this->new && in_array($name, $this->updateCond[1])) || !$property->getValue($this))
+            if ($name === 'id' || (!$this->new && in_array($name, $this->updateCond[1]))/* || !$property->getValue($this)*/)
                 continue;
 
             if ($this->new)
             {
-                $query .= '`' . $name . '`, ';
+                $query .= "`$name`, ";
                 $values .= '?, ';
             }
 
             else
             {
-                $query .= '`' . $name . '` = ?, ';
+                $query .= "`$name` = ?, ";
             }
 
             $params[] = $property->getValue($this);
@@ -93,12 +93,21 @@ abstract class ActiveRecord
         $this->pdo->prepare($query . $stuff[0])->execute($stuff[1]);
     }
 
-    public function close(): void
+    public function disable(array $cond, int $status = null): void
     {
-        if (!$this->id)
+        $query = "UPDATE `$this->tableName` SET `status` = ?";
+
+        if ($cond === [])
             return;
 
-        $this->pdo->query("UPDATE `$this->tableName` SET `status` = 0 WHERE `id` = $this->id");
+        $stuff = self::where($cond);
+
+        $this->pdo->prepare($query . $stuff[0])->execute(array_unshift($stuff[1], $status ?? static::STATUS_DELETED));
+    }
+
+    public function status(int $status): void
+    {
+        $this->disable([], $status);
     }
 
     protected static function count(array $cond = [], string $cols = '*'): int
@@ -188,7 +197,6 @@ abstract class ActiveRecord
 
         if ($page > 0)
         {
-            $total = self::count(isset($stuff[0]) ? ([ 'build' => [ $stuff[0], $stuff[1] ] ]) : []);
             $limit = App::$config['pagination']['limit'];
             $offset = ($page - 1) * $limit;
             // build final query
@@ -202,16 +210,13 @@ abstract class ActiveRecord
             return [];
 
         return $page > 0 ? [
-            'total' => $total,
-            'limit' => $limit,
-            'pages' => ceil($total / $limit),
+            'total' => self::count(isset($stuff[0]) ? ([ 'build' => [ $stuff[0], $stuff[1] ] ]) : []),
             'page' => $page,
-            'offset' => $offset,
             'products' => $stmt->fetchAll() // fetch mode?
         ] : $stmt->fetchAll();
     }
 
-    protected function custom(array $data, int $fetch_mode = PDO::ATTR_DEFAULT_FETCH_MODE): array
+    protected function custom(array $data, int $fetch_mode = PDO::FETCH_ASSOC): array
     {
         $query = '';
 
@@ -220,17 +225,38 @@ abstract class ActiveRecord
             $query .= 'SELECT ';
             foreach ($data['select'] as $column)
             {
-                $query .= "`$column`, ";
+                $query .= "$column, ";
             }
 
             $query = substr($query, 0, -2) . " FROM `$this->tableName`";
         }
 
-        if (isset($data['cond']) && $data['cond'] !== [])
+        if (isset($data['innerjoin']))
+            $query .= self::innerJoin($data['innerjoin']);
+
+        if (isset($data['leftjoin']))
+            $query .= self::leftJoin($data['leftjoin']);
+
+        if (isset($data['rightjoin']))
+            $query .= self::rightJoin($data['rightjoin']);
+
+        if (isset($data['cond']))
         {
             $stuff = self::where($data['cond']);
             $query .= $stuff[0];
             $params = $stuff[1];
+        }
+
+        if (isset($data['order']))
+        {
+            $query .= ' ORDER BY ';
+
+            foreach ($data['order'] as $col)
+            {
+                $query .= "`$col`, ";
+            }
+
+            $query = substr($query, 0, -2) . ' DESC';
         }
 
         $stmt = $this->pdo->prepare($query);
@@ -242,6 +268,42 @@ abstract class ActiveRecord
         return $stmt->fetchAll($fetch_mode);
     }
 
+    private static function innerJoin(array $data): string
+    {
+        return self::join('INNER', $data);
+    }
+
+    private static function leftJoin(array $data): string
+    {
+        return self::join('LEFT', $data);
+    }
+
+    private static function rightJoin(array $data): string
+    {
+        return self::join('RIGHT', $data);
+    }
+
+    private static function join(string $type, array $data): string
+    {
+        $join = '';
+
+        if (isset($data['on']))
+        {
+            $join .= " $type JOIN $data[0] ON " . key($data['on']) . ' = ' . $data['on'][key($data['on'])];
+        }
+
+        else
+        {
+            foreach ($data as $table)
+            {
+                $on = $table['on'];
+                $join .= " $type JOIN $table[0] ON " . key($on) . ' = ' . $on[key($on)];
+            }
+        }
+
+        return $join;
+    }
+
     private static function where(array $cond): array
     {
         $where = ' WHERE ';
@@ -249,9 +311,19 @@ abstract class ActiveRecord
 
         foreach ($cond as $key => $value)
         {
+            $operator = '';
+
+            if ($key === 'operator')
+            {
+                $key = $value[0];
+                $operator = is_array($value[2]) ? 'NOT IN(' : '<>';
+                $value = $value[2];
+            }
+
             if (is_array($value))
             {
-                $where .= '`' . $key . '` IN(';
+                $operator = $operator ?: 'IN(';
+                $where .= "`$key` $operator";
 
                 for ($i = 0; $i < count($value); $i++)
                 {
@@ -264,7 +336,8 @@ abstract class ActiveRecord
 
             else
             {
-                $where .= '`' . $key . '` = ?';
+                $space_ship = $value === null ? '<=>' : ($operator ?: '=');
+                $where .= "`$key` $space_ship ?";
                 $params[] = $value;
             }
 

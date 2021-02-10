@@ -2,6 +2,8 @@
 
 namespace models;
 
+use framework\App;
+
 abstract class Model
 {
     protected string $formName;
@@ -47,14 +49,14 @@ abstract class Model
                             continue 2;
                     }
 
-                    if (!$this->checkProp($prop, [ $rule[1], $rule['targetClass'] ?? null]))
+                    if (!$this->checkProp($prop, $rule))
                         return false;
                 }
             }
 
             else
             {
-                if (!$this->checkProp($rule[0], [ $rule[1], $rule['targetClass'] ?? null]))
+                if (!$this->checkProp($rule[0], $rule))
                     return false;
             }
         }
@@ -72,7 +74,7 @@ abstract class Model
         if (!property_exists($this, $prop))
             return false;
 
-        switch ($rule[0])
+        switch ($rule[1])
         {
             case 'required':
             {
@@ -86,23 +88,39 @@ abstract class Model
                 if ($this->$prop === '')
                     break;
 
-                if (!is_string($this->$prop))
+                if (isset($rule['max']) && mb_strlen($this->$prop) > $rule['max'])
                     return false;
 
-                if (isset($rule['max']) && $this->$prop > $rule['max'])
-                    return false;
-
-                else if (isset($rule['min']) && $this->$prop < $rule['min'])
+                else if (isset($rule['min']) && mb_strlen($this->$prop) < $rule['min'])
                     return false;
 
                 break;
             }
-            case 'integer':
+            case 'int':
             {
+                if ($this->$prop === '')
+                    break;
+
                 if (!is_numeric($this->$prop) || is_double($this->$prop))
                     return false;
 
-                // todo match
+                if (isset($rule['matches']) && !in_array((int)$this->$prop, $rule['matches'], true)) // prevent coercion
+                    return false;
+
+                else if (isset($rule['check']) && !$rule['check']($this->$prop))
+                    return false;
+
+                break;
+            }
+            case 'decimal':
+            {
+                if ($this->$prop === '' || $this->$prop === '0')
+                    break;
+
+                if (!is_float($this->$prop + 0))
+                    return false;
+
+                // todo check size and decimal places
 
                 break;
             }
@@ -121,14 +139,17 @@ abstract class Model
             }
             case 'unique':
             {
+                if ($this->$prop === '')
+                    break;
+
                 $methodName = 'findBy' . ucfirst($prop);
 
-                if (!$rule[1] && !$this->checkMethod($rule[1], $methodName))
+                if (!isset($rule['targetClass']) && !$this->checkMethod($rule['targetClass'], $methodName))
                     return false;
 
-                $model = [ $rule[1], $methodName ]($this->$prop);
+                $model = [ $rule['targetClass'], $methodName ]($this->$prop);
 
-                // must be unique
+                // must be unique       redundant?
                 if ($model && $model->$prop === $this->$prop)
                     return false;
 
@@ -136,8 +157,11 @@ abstract class Model
             }
             default:
             {
+                if ($this->$prop === '')
+                    break;
+
                 // custom validation method
-                if ($this->checkMethod($this, $rule[0]) && ![ $this, $rule[0] ]($this->$prop))
+                if ($this->checkMethod($this, $rule[1]) && ![ $this, $rule[1] ]($this->$prop))
                     return false;
             }
         }
@@ -151,14 +175,16 @@ abstract class Model
     }
 
     // TODO: implement FormActive Class
-    public function getFormFields(): string
+    public function getFormFields(array $call = null, int $id = null): string
     {
         $fields = '';
+        $model = !$call ? null : $call($id ?? App::$user->id);
 
         foreach($this->attributeLabels() as $key => $value)
         {
+            $val = $model->$key ?? '';
             $fields .= "<label for=\"$key\">$value</label>\n";
-            $fields .= "<input id=\"$key\" type=\"" . ($key === 'password' ? $key : 'text') . "\" placeholder=\"$key\" name=\"$this->formName[$key]\">\n";
+            $fields .= "<input id=\"$key\" type=\"" . ($key === 'password' ? $key : 'text') . "\" placeholder=\"$key\" name=\"$this->formName[$key]\" value='$val'>\n";
         }
 
         return $fields;

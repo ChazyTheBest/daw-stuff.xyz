@@ -3,12 +3,41 @@ CREATE TABLE `category` (
     `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     `image` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'name.png',
     `description` text COLLATE utf8mb4_unicode_ci,
-    PRIMARY KEY (`id`)
+    `category_id` int(11),
+    `status` tinyint(1) NOT NULL DEFAULT 1,
+    PRIMARY KEY (`id`),
+    KEY `idx-category-category_id` (`category_id`),
+    CONSTRAINT `fk-category-category_id` FOREIGN KEY (`category_id`) REFERENCES `category` (`id`) ON DELETE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `category` (`name`, `image`, `description`) VALUES
-('Category 1', 'cat1.jpg', 'This is the Category #1'),
-('Category 2', 'cat2.jpg', 'This is the Category #2'),
-('Category 3', 'cat3.jpg', 'This is the Category #3'),
-('Category 4', 'cat4.jpg', 'This is the Category #4'),
-('Category 5', 'cat5.jpg', 'This is the Category #5');
+INSERT INTO `category` (`name`, `image`, `description`, `category_id`) VALUES
+('Category 1', 'cat1.jpg', 'This is the Category #1', null),
+('Category 2', 'cat2.jpg', 'This is the Category #2', null),
+('Category 3', 'cat3.jpg', 'This is the Category #3', null),
+('Category 4', 'cat4.jpg', 'This is the Category #4', null),
+('Category 5', 'cat5.jpg', 'This is the Category #5', null),
+('Subcategory 1', 'subcat1.jpg', 'This is the Subcategory #1', 1),
+('Subcategory 2', 'subcat2.jpg', 'This is the Subcategory #2', 1),
+('Subcategory 3', 'subcat3.jpg', 'This is the Subcategory #3', 1),
+('Subcategory 4', 'subcat4.jpg', 'This is the Subcategory #4', 1),
+('Subcategory 5', 'subcat5.jpg', 'This is the Subcategory #5', 1),
+('Subcategory 6', 'subcat6.jpg', 'This is the Subcategory #6', 2),
+('Subcategory 7', 'subcat7.jpg', 'This is the Subcategory #7', 2),
+('Subcategory 8', 'subcat8.jpg', 'This is the Subcategory #8', 2),
+('Subcategory 9', 'subcat9.jpg', 'This is the Subcategory #9', 2),
+('Subcategory 10', 'subcat10.jpg', 'This is the Subcategory #10', 2),
+('Subcategory 11', 'subcat11.jpg', 'This is the Subcategory #11', 3),
+('Subcategory 12', 'subcat12.jpg', 'This is the Subcategory #12', 3),
+('Subcategory 13', 'subcat13.jpg', 'This is the Subcategory #13', 3),
+('Subcategory 14', 'subcat14.jpg', 'This is the Subcategory #14', 3),
+('Subcategory 15', 'subcat15.jpg', 'This is the Subcategory #15', 3),
+('Subcategory 16', 'subcat16.jpg', 'This is the Subcategory #16', 4),
+('Subcategory 17', 'subcat17.jpg', 'This is the Subcategory #17', 4),
+('Subcategory 18', 'subcat18.jpg', 'This is the Subcategory #18', 4),
+('Subcategory 19', 'subcat19.jpg', 'This is the Subcategory #19', 4),
+('Subcategory 20', 'subcat20.jpg', 'This is the Subcategory #20', 4),
+('Subcategory 21', 'subcat21.jpg', 'This is the Subcategory #21', 5),
+('Subcategory 22', 'subcat22.jpg', 'This is the Subcategory #22', 5),
+('Subcategory 23', 'subcat23.jpg', 'This is the Subcategory #23', 5),
+('Subcategory 24', 'subcat24.jpg', 'This is the Subcategory #24', 5),
+('Subcategory 25', 'subcat25.jpg', 'This is the Subcategory #25', 5);

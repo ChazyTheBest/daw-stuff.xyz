@@ -2,7 +2,6 @@
 
 namespace models;
 
-use Exception;
 use framework\App;
 
 class SignupForm extends Model
@@ -26,14 +25,14 @@ class SignupForm extends Model
     {
         return [
             [ [ 'email', 'password' ], 'required' ],
-            [ [ 'name', 'surname', 'address_1', 'city' ], 'required', 'on' => self::SCENARIO_CART ],
-            [ 'email', 'trim' ],
-            [ [ 'name', 'surname', 'address_1', 'address_2', 'city' ], 'trim', 'on' => self::SCENARIO_CART ],
             [ [ 'email', 'password' ], 'string', 'max' => 255 ],
-            [ 'password', 'string', 'min' => 6 ],
-            [ [ 'name', 'surname', 'address_1', 'address_2', 'city' ], 'string', 'max' => 50, 'on' => self::SCENARIO_CART ],
+            [ 'email', 'trim' ],
             [ 'email', 'email' ],
-            [ 'email', 'unique', 'targetClass' => '\models\User' ]
+            [ 'email', 'unique', 'targetClass' => '\models\User' ],
+            [ 'password', 'string', 'min' => 6 ],
+            [ [ 'name', 'surname', 'address_1', 'city' ], 'required', 'on' => self::SCENARIO_CART ],
+            [ [ 'name', 'surname', 'address_1', 'address_2', 'city' ], 'trim', 'on' => self::SCENARIO_CART ],
+            [ [ 'name', 'surname', 'address_1', 'address_2', 'city' ], 'string', 'max' => 50, 'on' => self::SCENARIO_CART ]
         ];
     }
 
@@ -62,12 +61,12 @@ class SignupForm extends Model
     /**
      * Signs user up.
      *
+     * @param string $role
      * @return bool whether the creating new account was successful and email was sent
-     * @throws Exception
      */
-    public function signup(): bool
+    public function signup(string $role = 'customer'): bool
     {
-        if (!($user = $this->createUser()))
+        if (!($user = $this->createUser($role ?: 'customer')))
             return false;
 
         $info = new UserInfo();
@@ -101,16 +100,16 @@ class SignupForm extends Model
         return true;
     }
 
-    private function createUser(): ?User
+    private function createUser(string $role = 'customer'): ?User
     {
         // validate user input
-        if (!$this->validate())
+        if (!$this->validate() || $role !== 'customer' || $role !== 'staff')
             return null;
 
         // create a new user
         $user = new User();
         $user->email = $this->email;
-        $user->role = 'client';
+        $user->role = $role;
         $user->setPassword($this->password);
         //$user->generateAuthKey();
         //$user->generateEmailVerificationToken();

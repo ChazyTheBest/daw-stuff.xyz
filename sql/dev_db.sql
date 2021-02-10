@@ -8,14 +8,14 @@ SOURCE /srv/http/daw-stuff.xyz/sql/tables/user.sql
 -- TABLE `user_info`
 SOURCE /srv/http/daw-stuff.xyz/sql/tables/user_info.sql
 
--- TABLE `user_cart`
-SOURCE /srv/http/daw-stuff.xyz/sql/tables/user_cart.sql
-
 -- TABLE `category`
 SOURCE /srv/http/daw-stuff.xyz/sql/tables/category.sql
 
 -- TABLE `product`
 SOURCE /srv/http/daw-stuff.xyz/sql/tables/product.sql
+
+-- TABLE `user_cart`
+SOURCE /srv/http/daw-stuff.xyz/sql/tables/user_cart.sql
 
 -- TABLE `order`
 SOURCE /srv/http/daw-stuff.xyz/sql/tables/order.sql

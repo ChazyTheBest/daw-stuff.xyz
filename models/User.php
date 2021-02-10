@@ -3,6 +3,7 @@
 namespace models;
 
 use framework\ActiveRecord;
+use framework\App;
 
 /**
  * This is the model class for table "user".
@@ -51,11 +52,11 @@ final class User extends ActiveRecord
     /**
      * Gets query for [[UserInfo]].
      *
-     * return ActiveQuery|UserInfoQuery
+     * return ActiveQuery
      */
-    public function getUserInfo()
+    public function getUserInfo(): ActiveRecord
     {
-        //return $this->hasOne(UserInfo::class, [ 'user_id' => 'id' ]);
+        return UserInfo::findById($this->id);
     }
 
     /**
@@ -116,11 +117,29 @@ final class User extends ActiveRecord
      * @param int $id
      * @return ActiveRecord
      */
-    public static function findById(int $id): ActiveRecord
+    public static function findById(int $id): ?ActiveRecord
     {
         return parent::findOne([
             'id' => $id,
             'status' => self::STATUS_ACTIVE
         ]);
+    }
+
+    public static function getList(array $roles): array
+    {
+        return (new User)->custom([
+            'select' => [ '`id`', '`email`', '`name`', '`role`', '`status`', '`created_at`' ],
+            'innerjoin' => [ '`user_info` ui', 'on' => [ 'ui.`user_id`' => '`id`' ] ],
+            'cond' => [ 'role' => $roles ]
+        ]);
+    }
+
+    public static function getStatusList(): array
+    {
+        return [
+            User::STATUS_DELETED => App::t('table', 'td_status_0'),
+            User::STATUS_INACTIVE => App::t('table', 'td_status_9'),
+            User::STATUS_ACTIVE => App::t('table', 'td_status_10')
+        ];
     }
 }

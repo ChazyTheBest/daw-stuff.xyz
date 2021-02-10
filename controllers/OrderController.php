@@ -5,7 +5,6 @@ namespace controllers;
 use Exception;
 use framework\App;
 use framework\UserSession;
-use models\BrowserCart;
 use models\Order;
 use models\OrderForm;
 use models\OrderLine;
@@ -38,13 +37,13 @@ class OrderController extends Controller
                     ],
                     [
                         'allow' => true,
-                        'actions' => [ 'view' ],
-                        'roles' => [ 'client', 'staff', 'admin' ],
+                        'actions' => [ 'view', 'delete' ],
+                        'roles' => [ 'customer', 'staff', 'admin' ],
                         'roleCheck' => [ Order::class, 'findById' ]
                     ],
                     [
                         'allow' => true,
-                        'actions' => [ 'update', 'delete' ],
+                        'actions' => [ 'manage', 'update' ],
                         'roles' => [ 'staff', 'admin' ]
                     ]
                 ]
@@ -67,15 +66,16 @@ class OrderController extends Controller
     /**
      * Displays order details.
      *
-     * @param int $id
+     * @param int|null $id
      * @return mixed
      */
-    public function actionView(int $id): string
+    public function actionView(?int $id): string
     {
         $model = Order::findById($id);
-
         if (!$model)
-            return $this->render('error');
+            return $this->error('404', [
+                'message' => App::t('error', '404_order')
+            ]);
 
         return $this->render('view', [
             'model' => $model,
@@ -96,10 +96,10 @@ class OrderController extends Controller
 
         $model = new OrderForm();
 
-        if ($this->getIsAjax())
+        if ($this->getIsAjax()) // TODO: implement transactions
         {
-            if (!$model->load($_POST) || !$model->payment)
-                return $this->redirect('/order/error');
+            if (!$model->load($_POST))
+                return $this->inform(App::t('error', 'model_load'));
 
             $cart = new UserCart();
             $data = $cart->getCartItems();
@@ -128,7 +128,7 @@ class OrderController extends Controller
             $order->created_by = App::$user->id;
 
             if (!$order->save() || !$order->id)
-                return $this->redirect('/order/error3');
+                return $this->inform(App::t('error', 'model_save'));
 
             foreach ($cartProducts as $product)
             {
@@ -137,8 +137,9 @@ class OrderController extends Controller
                 $line->quantity = $cartItems[$product['id']];
                 $line->price = $product['price'] * $line->quantity;
                 $line->order_id = $order->id;
+
                 if (!$line->save())
-                    return $this->redirect('/order/error2');
+                    return $this->inform(App::t('error', 'model_load'));
             }
 
             $cart->emptyCart();
@@ -147,8 +148,90 @@ class OrderController extends Controller
         }
 
         return $this->render('create', [
-            'model' => $model,
-            'cart' => new BrowserCart($_COOKIE['items'] ?? [])
+            'model' => $model
         ]);
+    }
+
+    public function actionManage(): string
+    {
+        if ($this->getIsAjax())
+        {
+            header('Content-type: application/json');
+
+            return json_encode([
+                'query' => Order::getList(),
+                'texts' => [
+                    'title' => [
+                        'view' => App::t('table', 'td_view_order'),
+                        'delete' => App::t('table', 'td_delete_order')
+                    ],
+                    'status' => Order::getStatusList(),
+                    'buttons' => [
+                        'names' => [
+                            'reset' => App::t('table', 'btn_all'),
+                            'filter' => [
+                                App::t('table', 'td_status_0'),
+                                App::t('table', 'td_status_3'),
+                                App::t('table', 'td_status_4'),
+                                App::t('table', 'td_status_6')
+                            ]
+                        ],
+                        'reset' => [ 'columns' => [ 3 ] ],
+                        'filter' => [
+                            [ 'columns' => [ 3 ], 'term' => App::t('table', 'td_status_0') ],
+                            [ 'columns' => [ 3 ], 'term' => App::t('table', 'td_status_3') ],
+                            [ 'columns' => [ 3 ], 'term' => App::t('table', 'td_status_4') ],
+                            [ 'columns' => [ 3 ], 'term' => App::t('table', 'td_status_6') ],
+                        ]
+                    ]
+                ],
+                'lang' => ''
+            ]);
+        }
+
+        return $this->render('manage');
+    }
+
+    public function actionUpdate(?int $id): string
+    {
+        if (!$this->getIsAjax())
+            return $this->error('405', [
+                'message' => App::t('error', '405_ajax')
+            ]);
+
+        $model = Order::findById($id);
+        if (!$model && !$model instanceof Order)
+            return $this->inform(App::t('error', '404_order'));
+
+        $status = $_POST['status'] ?? null;
+        if ($model->checkStatus($status))
+            return $this->inform(App::t('error', 'order_invalid_status'));
+
+        $model->setStatus($status);
+
+        return $this->redirect('reload');
+    }
+
+    public function actionDelete(?int $id): string
+    {
+        if (!$this->getIsAjax())
+            return $this->error('405', [
+                'message' => App::t('error', '405_ajax')
+            ]);
+
+        $model = Order::findById($id);
+        if (!$model || !$model instanceof Order)
+            return $this->inform(App::t('error', '404_order'));
+
+        if (App::$user->role === 'customer' && $model->status > Order::STATUS_DECLINED)
+            return $this->inform(App::t('error', 'order_delete_refund'));
+
+        $cond = [ 'id' => $id ];
+        if (App::$user->role === 'customer')
+            $cond['created_by'] = App::$user->id;
+
+        $model->disable($cond);
+
+        return $this->redirect('reload');
     }
 }

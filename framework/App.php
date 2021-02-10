@@ -9,6 +9,7 @@ final class App
 {
     public static array $config;
     public static ?User $user;
+    private static array $messages = [];
 
     /**
      * App constructor.
@@ -49,14 +50,15 @@ final class App
 
         // if the controller does not exist, display an error
         if (!class_exists($c_name))
-            return (new Controller('site'))->render('error');
+            return (new Controller('site'))->error('404');
 
         // TODO: rewrite to short url (ie: /site/index -> /index)
         $action = $components[2];
+        $p = $components;
 
         // if the action is not specified, display an error
         if (!isset($action))
-            return (new Controller('site'))->render('error');
+            return (new Controller('site'))->error('404');
 
         $controller = new $c_name;
         $behaviors = $controller->behaviors();
@@ -69,7 +71,7 @@ final class App
 
                 // the action can be performed by both authenticated and non-authenticated users
                 if (in_array('?', $rule['roles']) && in_array('@', $rule['roles']))
-                    return $controller->$method($components[3] ?? null); // WIP
+                    return $controller->$method(isset($p[3]) ? (int) $p[3] : null, isset($p[4]) ? (int) $p[4] : null); // WIP
 
                 // the action requires that the user is not authenticated
                 if (in_array('?', $rule['roles']) && !$auth->isLoggedIn())
@@ -81,39 +83,47 @@ final class App
                     if (in_array(App::$user->role, $rule['roles']))
                     {
                         // check ownership
-                        if (App::$user->role === 'client' && isset($rule['roleCheck']))
+                        if (App::$user->role === 'customer' && isset($rule['roleCheck']))
                         {
-                            $model = $rule['roleCheck'][0]::{$rule['roleCheck'][1]}($components[3] ?? 0);
-                            if (!$model || $model->created_by !== App::$user->id)
-                                return (new Controller('site'))->render('error');   // TODO not authorized
+                            $model = $rule['roleCheck'][0]::{$rule['roleCheck'][1]}(isset($p[3]) ? (int) $p[3] : null);
+                            if (!$model)
+                                return (new Controller('site'))->error('404'); // not found
+
+                            if ($model->created_by !== App::$user->id)
+                                return (new Controller('site'))->error('403'); // not authorized
                         }
                     }
 
                     else if (!in_array('@', $rule['roles']))
-                        return (new Controller('site'))->render('error');           // TODO not authorized
+                        return (new Controller('site'))->error('403'); // not authorized
 
                     // else fix controller rules
 
-                    return $controller->$method($components[3] ?? null);
+                    return $controller->$method(isset($p[3]) ? (int) $p[3] : null);
                 }
 
                 else
-                {   // TODO check this and switch to html render
-                    header('Content-type: application/json');
-                    return json_encode([
-                        'msg' => 'You need to be authenticated to perform this action'
-                    ]);
+                {
+                    return (new Controller('site'))->error('401'); // not authenticated
                 }
             }
         }
 
         // the action does not exist, or is not valid, therefore display an error message
-        return (new Controller('site'))->render('error');
+        return (new Controller('site'))->error('404');
     }
 
-    // TODO: implement file-based translations
     public static function t(string $cat, string $name): string
     {
-        return '';
+        if (!isset(self::$messages[$cat]))
+        {
+            $file = '../messages/' . self::$config['lang'] . '/' . $cat . '.php';
+            if (!is_file($file))
+                return '';
+
+            $messages[$cat] = require $file;
+        }
+
+        return $messages[$cat][$name] ?? '';
     }
 }

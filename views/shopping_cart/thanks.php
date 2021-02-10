@@ -1,14 +1,14 @@
 <?php
 
-// TODO: implement translation system
-
-$this->title = 'Gracias';
+$this->title = 'Thanks';
 
 ?>
-<section>
-    <h1>Gracias por la compra</h1>
+    <section class="bg-light p-4">
 
-    <p>En unos dias podrás disfrutar de su pedido.</p>
+        <h1><?= $this->title ?></h1>
 
-    <a href="/shop/index">Comprar más</a>
-</section>
+        <p>In a few days you'll be enjoying your order.</p>
+
+        <a href="/shop/index">Buy more</a>
+
+    </section>

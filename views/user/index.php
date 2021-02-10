@@ -1,15 +1,12 @@
 <?php
 
-// TODO: implement translation system
-// TODO: pass the User model to display data instead of using $_SESSION
-
-$this->title = 'Bienvenido';
+$this->title = 'User Index';
 
 ?>
-<section class="bg-light p-4">
+    <section class="bg-light p-4">
 
-    <h1>User Index</h1>
+        <h1><?= $this->title ?></h1>
 
-    <p>Bienvenido: <?= $_SESSION['username'] ?></p>
+        <p>Nothing to see here...</p>
 
-</section>
+    </section>

@@ -8,14 +8,14 @@ SOURCE /srv/http/inmucrom.com/sql/tables/user.sql
 -- TABLE `user_info`
 SOURCE /srv/http/inmucrom.com/sql/tables/user_info.sql
 
--- TABLE `user_cart`
-SOURCE /srv/http/inmucrom.com/sql/tables/user_cart.sql
-
 -- TABLE `category`
 SOURCE /srv/http/inmucrom.com/sql/tables/category.sql
 
 -- TABLE `product`
 SOURCE /srv/http/inmucrom.com/sql/tables/product.sql
+
+-- TABLE `user_cart`
+SOURCE /srv/http/inmucrom.com/sql/tables/user_cart.sql
 
 -- TABLE `order`
 SOURCE /srv/http/inmucrom.com/sql/tables/order.sql

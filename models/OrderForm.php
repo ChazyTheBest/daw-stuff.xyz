@@ -12,9 +12,9 @@ class OrderForm extends Model
     {
         return [
             [ 'payment', 'required' ],
-            [ 'payment', 'integer', 'matches' => [ Order::PAYMENT_BANK,
-                                                   Order::PAYMENT_CREDIT_CARD,
-                                                   Order::PAYMENT_PAYPAL ] ],
+            [ 'payment', 'int', 'matches' => [ Order::PAYMENT_BANK,
+                                               Order::PAYMENT_CREDIT_CARD,
+                                               Order::PAYMENT_PAYPAL ] ]
         ];
     }
 

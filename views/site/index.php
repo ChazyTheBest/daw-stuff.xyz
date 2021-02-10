@@ -1,12 +1,14 @@
 <?php
 
-// TODO: implement translation system
+// todo design home page
+
+$this->title = 'Site Index';
 
 ?>
 <section class="bg-light p-4">
 
-    <h1>Site Index</h1>
+    <h1><?= $this->title ?></h1>
 
-    <p>Página principal</p>
+    <p>Home page</p>
 
 </section>

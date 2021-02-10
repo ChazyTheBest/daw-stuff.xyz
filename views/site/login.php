@@ -1,16 +1,20 @@
 <?php
 
-/* @var $model \models\LoginForm */
+/* @var $model LoginForm */
+
+use models\LoginForm;
 
 $this->title = 'Login';
 
 ?>
-<section>
-    <h1><?= $this->title ?></h1>
+    <section class="bg-light p-4">
 
-    <form id="login" action="/site/login" method="POST">
-        <?= $model->getFormFields() ?>
+        <h1><?= $this->title ?></h1>
 
-        <input type="submit" value="Login">
-    </form>
-</section>
+        <form id="login" action="/site/login" method="POST">
+            <?= $model->getFormFields() ?>
+
+            <input type="submit" value="Login">
+        </form>
+
+    </section>
