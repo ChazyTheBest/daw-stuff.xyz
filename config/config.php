@@ -1,5 +1,11 @@
 <?php
 
+/* @var $domain */
+
+$sub = APP_ENV === 'dev' ? 'www' : 'demo';
+$secure = APP_ENV === 'dev' ? false : true;
+$user = APP_ENV === 'dev' ? 'daw-stuff' : 'inmucrom';
+
 return
 [
     'lang' => 'en',
@@ -7,12 +13,12 @@ return
         'en' => 'English',
         'es' => 'Español'
     ],
-    'domain' => 'daw-stuff.xyz',
-    'session' => [ 'id' => 'php_ses_id', 'lifetime' => 0, 'secure' => FALSE, 'logout_time' => 3600 ],
+    'domain' => "$sub.$domain",
+    'session' => [ 'id' => 'php_ses_id', 'lifetime' => 0, 'secure' => $secure, 'logout_time' => 3600 ],
     'pdo' =>
     [
         'dsn' => 'mysql:unix_socket=/run/mysqld/mysqld.sock;dbname=shop;charset=utf8mb4',
-        'user' => 'daw-stuff', // no password, unix_socket authentication
+        'user' => $user, // no password, unix_socket authentication
         'options' =>
         [
             PDO::ATTR_ERRMODE           => PDO::ERRMODE_EXCEPTION,  // highly recommended
@@ -28,7 +34,7 @@ return
     [
         'images' =>
         [
-            'path' => '/srv/http/daw-stuff.xyz/www/img/',
+            'path' => "/srv/http/$domain/www/img/",
             'max_file_size' => 10485760,
             'types' => [
                 'png' => 'image/png',
