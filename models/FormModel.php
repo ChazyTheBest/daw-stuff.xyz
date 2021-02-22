@@ -55,6 +55,12 @@ abstract class FormModel
 
             else
             {
+                if (isset($rule['on']))
+                {
+                    if (!$this->checkScenario($rule['on']))
+                        continue 1;
+                }
+
                 $this->checkProp($rule[0], $rule);
             }
         }
@@ -113,7 +119,7 @@ abstract class FormModel
                 if ($this->$prop === '' || $this->$prop === '0')
                     break;
 
-                if (!is_float($this->$prop + 0))
+                if (!filter_var($this->$prop, FILTER_VALIDATE_FLOAT))
                     throw new Exception(App::t('error', 'form_decimal', [ strtolower($this->attributeLabel($prop)) ]));
 
                 // todo check size and decimal places

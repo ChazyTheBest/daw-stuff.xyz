@@ -59,7 +59,7 @@ $(function()
                     if (sub)
                     {
                         Object.keys(sub).forEach(function (i) {
-                            html += '<option value="' + sub[i].id + '"' + (data.subcategory_id === parseInt(sub[i].id) ? ' selected' : '') + '>' + sub[i].name + '</option>';
+                            html += '<option value="' + i + '"' + (data.subcategory_id === parseInt(i) ? ' selected' : '') + '>' + sub[i] + '</option>';
                         });
                     }
 

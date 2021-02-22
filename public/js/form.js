@@ -2,16 +2,24 @@ $(function ()
 {
     const form = $( 'form:not(#search)' );
 
-    form.on( 'submit', function ()
+    form.on( 'submit', function (e)
     {
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            data: $(this).serialize(),
-            success: success,
-            error: error
-        })
+        if (dropzoneData)
+        {
+            dropzoneData(this);
+        }
+
+        else
+        {
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: success,
+                error: error
+            });
+        }
 
         return false;
-    })
-})
+    });
+});

@@ -44,7 +44,7 @@ return
                 'jpeg' => 'image/jpeg',
                 'jpg' => 'image/jpeg'
             ],
-            'size' =>
+            'resolution' =>
             [
                 'max_w' => 4000,
                 'min_w' => 286,

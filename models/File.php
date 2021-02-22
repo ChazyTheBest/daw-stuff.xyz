@@ -2,6 +2,8 @@
 
 namespace models;
 
+use Exception;
+use framework\App;
 use Imagick;
 
 class File
@@ -14,7 +16,7 @@ class File
 
     public function checkPath(): bool
     {
-        return is_dir($this->path) ?? mkdir($this->path, 0755);
+        return !is_dir($this->path) ? mkdir($this->path, 0755, true) : true;
     }
 
     public function processImage(): bool
@@ -23,23 +25,26 @@ class File
 
         foreach ($files as $key => $img)
         {
-            if ( $img['error'] !== UPLOAD_ERR_OK || $img['size'] > $this->imgRules['max_file_size'] )
-                return false;
+            if ($img['error'] !== UPLOAD_ERR_OK)
+                throw new Exception(App::t('error', 'file_upload'));
+
+            if ($img['size'] > $this->imgRules['max_file_size'])
+                throw new Exception(App::t('error', 'max_file_size', $this->imgRules['max_file_size']));
 
             if ($this->imgRules['types'][strtolower(pathinfo($img['name'])['extension'])] !== mime_content_type($img['tmp_name']))
-                return false;
+                throw new Exception(App::t('error', 'mime_type', [ implode(',', $this->imgRules['types']) ]));
 
             list($width, $height, $type, $attr) = getimagesize($img['tmp_name']);
 
-            if ($width > $this->imgRules['max_w'] || $height > $this->imgRules['max_h'] ||
-                $width < $this->imgRules['min_w'] || $height < $this->imgRules['min_h'])
-                return false;
+            if ($width > $this->imgRules['resolution']['max_w'] || $height > $this->imgRules['resolution']['max_h'] ||
+                $width < $this->imgRules['resolution']['min_w'] || $height < $this->imgRules['resolution']['min_h'])
+                throw new Exception(App::t('error', 'img_resolution', [ "$this->imgRules[resolution][max_w] by $this->imgRules[resolution][max_h]" ]));
 
             $name = array_key_first($files) === $key ? 'main.jpg' : "img_$key.jpg";
 
             $imagick = new Imagick();
-            $imagick->newImage($this->imgRules['min_w'], $height < $this->imgRules['min_h'], 'white');
-            $imagick->compositeImage($img['tmp_name'], Imagick::COMPOSITE_OVER, 0, 0);
+            $imagick->newImage($this->imgRules['resolution']['min_w'], $height < $this->imgRules['resolution']['min_h'], 'white');
+            $imagick->compositeImage(new Imagick($img['tmp_name']), Imagick::COMPOSITE_OVER, 0, 0);
             $imagick->setImageFormat('jpeg');
             $imagick->setCompressionQuality(97);
             $imagick->setImageFilename($name);
@@ -57,24 +62,11 @@ class File
     {
         $normalized_array = [];
 
-        foreach ($this->files as $index => $file )
+        foreach ( $this->files as $key => $val )
         {
-            if (!is_array($file['name']))
+            foreach ( $val as $idx => $name )
             {
-                $normalized_array[$index][] = $file;
-                continue;
-            }
-
-            foreach ( $file['name'] as $idx => $name )
-            {
-                $normalized_array[$index][$idx] =
-                [
-                    'name'     => $name,
-                    'type'     => $file['type'][$idx],
-                    'tmp_name' => $file['tmp_name'][$idx],
-                    'error'    => $file['error'][$idx],
-                    'size'     => $file['size'][$idx]
-                ];
+                $normalized_array[$idx][$key] = $name;
             }
         }
 

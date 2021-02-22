@@ -46,5 +46,15 @@ return [
     '' => '',
     '' => '',
     '' => '',
+
+    // file upload errors
+    'file_upload' => 'There was a problem with the file update. Please, try again later or contact support.',
+    'max_file_size' => 'File size exceeds maximum permitted (%s).',
+    'mime_type' => 'File type not supported. Allowed types: %s.',
+    'img_resolution' => 'Image resolution exceeds maximum permitted (%s).',
+    '' => '',
+    '' => '',
+    '' => '',
+    '' => '',
     '' => ''
 ];

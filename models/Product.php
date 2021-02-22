@@ -92,13 +92,6 @@ class Product extends ActiveRecord
         ]);
     }
 
-    public static function getAllActive(int $page = 0): array
-    {
-        return self::findAll([
-            'status' => Product::STATUS_ACTIVE
-        ], $page);
-    }
-
     public static function getAll(): array
     {
         return self::findAll();

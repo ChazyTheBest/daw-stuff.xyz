@@ -25,7 +25,8 @@ jQuery.ajaxSetup({ async: false })
 
 let texts = null,
     query = null,
-    language = '';
+    language = '',
+    dropzoneData = null;
 
 function dtFilter(dt, column, term)
 {

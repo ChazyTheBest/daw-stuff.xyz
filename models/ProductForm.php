@@ -35,7 +35,6 @@ class ProductForm extends FormModel
             $this->attributeLabels = [
                 'name' => App::t('form', 'l_name'),
                 'description' => App::t('form', 'l_description'),
-                'image' => App::t('form', 'l_image'),
                 'price' => App::t('form', 'l_price'),
                 'discount' => App::t('form', 'l_discount'),
                 'category' => App::t('form', 'l_category'),
@@ -93,6 +92,6 @@ class ProductForm extends FormModel
         $rules = App::$config['files']['images'];
         $file = new File($rules['path'] . 'products/' . $id, $files, $rules);
 
-        return !$file->checkPath() ?? $file->processImage();
+        return $file->checkPath() && $file->processImage();
     }
 }

@@ -54,8 +54,34 @@ class Category extends ActiveRecord
     {
         return self::findAll([
             'category_id' => $id,
-            'status' => Category::STATUS_ACTIVE
+            'status' => self::STATUS_ACTIVE
         ]);
+    }
+
+    public static function getAllNested(): array
+    {
+        $categories = [];
+
+        foreach (self::getAll() as $cat)
+        {
+            $categories[$cat['id']] = [
+                'name' => $cat['name'],
+                'subcategories' => self::getSubNested($cat['id'])
+            ];
+        }
+
+        return $categories;
+    }
+
+    public static function getSubNested(int $id): array
+    {
+        $subcategories = [];
+        foreach (self::getAll($id) as $sub)
+        {
+            $subcategories[$sub['id']] = $sub['name'];
+        }
+
+        return $subcategories;
     }
 
     public static function getList(): array

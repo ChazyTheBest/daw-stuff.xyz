@@ -12,7 +12,7 @@ $this->title = $model->name;
         <h1><?= $this->title ?></h1>
 
         <article>
-            <img src="/img/products/<?= $model->image ?>" alt="">
+            <img src="<?= str_starts_with($model->image, 'http') ? $model->image : "/img/products/$model->image" ?>" alt="">
             <p><?= $model->description ?></p>
             <p>Price: <?= $model->price ?> &euro;</p>
             <form id="product-add" action="/shoppingCart/add/<?= $model->id ?>" method="POST">

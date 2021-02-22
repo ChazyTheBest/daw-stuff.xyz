@@ -66,13 +66,26 @@ class ProductController extends Controller
 
         if ($this->getIsAjax())
         {
+            if (isset($_GET['cat']))
+            {
+                $cat_id = $_GET['cat'];
+
+                $category = Category::findById($cat_id);
+                if (!$category)
+                    return $this->inform(App::t('error', '404_category'));
+
+                header('Content-type: application/json');
+                return json_encode([
+                    'subcategories' => Category::getSubNested($cat_id)
+                ]);
+            }
+
             if (!isset($_FILES['images']))
                 return $this->inform(App::t('error', 'form_images'));
 
             try
             {
                 $model->load($_POST);
-
                 $model->scenario = ProductForm::SCENARIO_NEW;
 
                 return $model->create($_FILES['images'])
@@ -96,32 +109,6 @@ class ProductController extends Controller
         if ($this->getIsAjax())
         {
             header('Content-type: application/json');
-
-            $categories = [];
-
-            foreach (Category::getAll() as $cat)
-            {
-                $categories[$cat['id']] = [
-                    'name' => $cat['name'],
-                    'subcategories' => []
-                ];
-
-                foreach (Category::getAll($cat['id']) as $sub)
-                {
-                    $categories[$cat['id']]['subcategories'][] = [
-                        'id' => $sub['id'],
-                        'name' => $sub['name']
-                    ];
-                }
-            }
-
-            if (isset($_GET['cat']))
-            {
-                $data = [
-                    'subcategories' => []
-                ];
-            }
-
             return json_encode([
                 'query' => Product::getAll(),
                 'texts' => [
@@ -129,7 +116,7 @@ class ProductController extends Controller
                         'view' => App::t('table', 'td_view_product'),
                         'delete' => App::t('table', 'td_delete_product')
                     ],
-                    'categories' => $categories,
+                    'categories' => Category::getAllNested(),
                     'none' => App::t('table', 'td_none'),
                     'buttons' => [
                         'names' => [ 'create' => App::t('table', 'btn_create') ],
@@ -191,6 +178,8 @@ class ProductController extends Controller
                     $category = Category::findById($cat_id);
                     if (!$category)
                         return $this->inform(App::t('error', '404_category'));
+
+                    $subcategories = Category::getSubNested($cat_id);
 
                     foreach (Category::getAll($cat_id) as $sub)
                     {
