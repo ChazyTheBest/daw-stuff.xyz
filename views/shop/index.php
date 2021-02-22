@@ -44,7 +44,7 @@ $next = $page + 1;
 <?php foreach (Category::getAll($cat['id']) as $subcat): ?>
                         <a class="list-group-item d-flex justify-content-between align-items-center<?= $subcat['id'] === $sub_id ? ' active' : '' ?>" href="/shop/index/<?= $cat['id'] ?>/<?= $subcat['id'] ?>">
                             <span><?= $subcat['name'] ?></span>
-                            <span class="badge badge-primary badge-pill justify-end"><?= Product::count([ 'category_id' => $cat['id'], 'subcategory_id' => $subcat['id'] ]) ?></span>
+                            <span class="badge badge-primary badge-pill justify-end"><?= Product::count([ 'category_id' => $cat['id'], 'subcategory_id' => $subcat['id'], 'status' => Product::STATUS_ACTIVE ]) ?></span>
                         </a>
 <?php endforeach; ?>
                     </div>
