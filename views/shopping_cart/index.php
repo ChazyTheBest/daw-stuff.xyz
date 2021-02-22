@@ -35,12 +35,12 @@ $items = $data['items'];
                                                                               data-item-id="<?= $product['id'] ?>"
                                                                               data-old-value="<?= $items[$product['id']] ?>" value="<?= $items[$product['id']] ?>">
                     </td>
-                    <td><?= $product['price'] * $items[$product['id']] ?></td>
+                    <td><?= $product['price'] * $items[$product['id']] ?> &euro;</td>
                     <td><a class="cart_delete" href="/shoppingCart/delete/<?= $product['id'] ?>">Delete</a></td>
                 </tr>
 <?php endforeach; ?>
                 <tr><td colspan="3"><br></td></tr>
-                <tr><td colspan="2">Total:</td><td><?= $total ?></td></tr>
+                <tr><td colspan="2">Total:</td><td><?= $total ?> &euro;</td></tr>
             </tbody>
             <tfoot>
                 <tr><td>Número total de unidades: <?= $model->getItemCount() ?></td></tr>

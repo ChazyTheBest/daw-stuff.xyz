@@ -93,21 +93,29 @@ abstract class ActiveRecord
         $this->pdo->prepare($query . $stuff[0])->execute($stuff[1]);
     }
 
-    public function disable(array $cond, int $status = null): void
+    public function disable(int $status = null): void
+    {
+        $this->setStatus($status ?? static::STATUS_DELETED);
+    }
+
+    public function enable(int $status = null): void
+    {
+        $this->setStatus($status ?? static::STATUS_ACTIVE);
+    }
+
+    public function setStatus(int $status)
     {
         $query = "UPDATE `$this->tableName` SET `status` = ?";
 
-        if ($cond === [])
-            return;
+        $stuff = self::where([ 'id' => $this->id ]);
+        array_unshift($stuff[1], $status);
 
-        $stuff = self::where($cond);
-
-        $this->pdo->prepare($query . $stuff[0])->execute(array_unshift($stuff[1], $status ?? static::STATUS_DELETED));
+        $this->pdo->prepare($query . $stuff[0])->execute($stuff[1]);
     }
 
     public function status(int $status): void
     {
-        $this->disable([], $status);
+        $this->disable($status);
     }
 
     protected static function count(array $cond = [], string $cols = '*'): int
@@ -209,10 +217,12 @@ abstract class ActiveRecord
         if ($stmt->rowCount() < 1)
             return [];
 
+        $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
         return $page > 0 ? [
             'total' => self::count(isset($stuff[0]) ? ([ 'build' => [ $stuff[0], $stuff[1] ] ]) : []),
             'page' => $page,
-            'products' => $stmt->fetchAll() // fetch mode?
+            'products' => $stmt->fetchAll()
         ] : $stmt->fetchAll();
     }
 

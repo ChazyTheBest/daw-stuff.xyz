@@ -29,10 +29,10 @@ $statusList = [
             </thead>
             <tbody>
 <?php foreach ($lines->getByOrderId($model->id) as $item): $name = Product::findById($item['product_id'])->name; ?>
-                <tr><td>$name</td><td>$item[quantity]</td><td>$item[price]</td></tr>
+                <tr><td><?= $name ?></td><td><?= $item['quantity'] ?></td><td><?= $item['price'] ?> &euro;</td></tr>
 <?php endforeach; ?>
                 <tr><td colspan="3"><br></td></tr>
-                <tr><td colspan="2">Total:</td><td><?= $model->total ?></td></tr>
+                <tr><td colspan="2">Total:</td><td><?= $model->total ?> &euro;</td></tr>
             </tbody>
         </table>
 

@@ -19,8 +19,7 @@ final class App
     {
         Autoloader::register();
         self::$config = $config;
-        $auth = new UserSession();
-        self::$user = $auth->isLoggedIn() ? User::findById($_SESSION['user_id']) : null;
+        self::$user = (new UserSession($config['session']))->isLoggedIn() ? User::findById($_SESSION['user_id']) : null;
     }
 
     // this is an attempt to replicate a basic functionality of the Yii2 framework
@@ -40,7 +39,6 @@ final class App
     // TODO: implement allowed methods
     private function handleRequest(string $resource): string
     {
-        // after this we can get an instance statically
         $auth = UserSession::getInstance();
 
         // split the requested resource into controller and action
@@ -113,17 +111,40 @@ final class App
         return (new Controller('site'))->error('404');
     }
 
-    public static function t(string $cat, string $name): string
+    /**
+     * File-based translated text strings
+     *
+     * @param string $cat the name of the file
+     * @param string $name the key of the text string
+     * @param array $params the optional params to be replaced (%s -> $var1)
+     * @return string the text string
+     */
+    public static function t(string $cat, string $name, array $params = []): string
     {
         if (!isset(self::$messages[$cat]))
         {
-            $file = '../messages/' . self::$config['lang'] . '/' . $cat . '.php';
+            $file = dirname(__DIR__) . '/messages/' . self::$config['lang'] . "/$cat.php";
             if (!is_file($file))
                 return '';
 
             $messages[$cat] = require $file;
         }
 
-        return $messages[$cat][$name] ?? '';
+        return $params === [] ? ($messages[$cat][$name] ?? '') : self::replaceVar($messages[$cat][$name] ?? '', $params);
+    }
+
+    /**
+     * Replaces the placeholders in a string for final values
+     *
+     * @param string $text the string with placeholders
+     * @param array $params the params that replace the placeholders
+     * @return string the final text string
+     */
+    private static function replaceVar(string $text, array $params): string
+    {
+        if ($text === '')
+            return '';
+
+        return sprintf($text, ...$params); // TODO improve this
     }
 }

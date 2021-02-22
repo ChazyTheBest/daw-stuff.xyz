@@ -5,15 +5,16 @@ namespace framework;
 final class UserSession
 {
     private bool $isLoggedIn;
-    private static UserSession $instance;
+    private static ?UserSession $instance = null;
 
     /**
      * AuthSystem constructor.
+     * @param array $session
      */
-    public function __construct()
+    public function __construct(array $session)
     {
         self::$instance = $this;
-        $this->session(App::$config['domain'], App::$config['session']);
+        $this->session($session);
         $this->isLoggedIn = isset($_SESSION['user_id'], $_SESSION['IS_LOGGED_IN']) && $_SESSION['IS_LOGGED_IN'] === TRUE;
         $this->enhanceHttpSecurity();
     }
@@ -24,21 +25,20 @@ final class UserSession
         return $this->isLoggedIn;
     }
 
-    private function session(string $domain, array $session): void
+    private function session(array $session): void
     {
         // Set the cookies params
         session_set_cookie_params
         ([
             'lifetime'  => $session['lifetime'],
             'path'      => '/',
-            'domain'    => $domain,
             'secure'    => $session['secure'],
             'httponly'  => TRUE,
             'samesite'  => 'strict'
         ]);
 
         // Set the session name
-        session_name($session['id']);
+        session_name($session['name']);
         session_start();                                    // Start the PHP session
 
         $time = time();
@@ -77,11 +77,8 @@ final class UserSession
         }
     }
 
-    public static function getInstance(): ?UserSession
+    public static function &getInstance(): UserSession
     {
-        if ( is_null( self::$instance ) )
-            return null;
-
         return self::$instance;
     }
 }

@@ -12,7 +12,7 @@ function success( data )
     else if (data.redirect === 'reload')
         window.location.reload(true)
 
-    else if (data.redirect !== '')
+    else if (data.redirect !== undefined && data.redirect !== '')
         window.location.assign(data.redirect);
 }
 

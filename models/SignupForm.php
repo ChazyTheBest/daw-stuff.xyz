@@ -4,7 +4,7 @@ namespace models;
 
 use framework\App;
 
-class SignupForm extends Model
+class SignupForm extends FormModel
 {
     const SCENARIO_CART = 0;
 
@@ -38,24 +38,32 @@ class SignupForm extends Model
 
     public function attributeLabels(): array
     {
-        $labels = [
-            'email' => App::t('form', 'l_username'),
-            'password' => App::t('form', 'l_pwd'),
-            'confirm_password' => App::t('form', 'l_cnfpwd')
-        ];
-
-        if ($this->scenario === self::SCENARIO_CART)
+        if ($this->attributeLabels === [])
         {
-            $labels['name'] = App::t('form', 'l_name');
-            $labels['surname'] = App::t('form', 'l_surname');
-            $labels['address_1'] = App::t('form', 'l_address_1');
-            $labels['address_2'] = App::t('form', 'l_address_2');
-            $labels['city'] = App::t('form', 'l_city');
-            $labels['phone'] = App::t('form', 'l_phone');
-            $labels['nin'] = App::t('form', 'l_nin');
+            $this->attributeLabels = [
+                'email' => App::t('form', 'l_username'),
+                'password' => App::t('form', 'l_pwd'),
+                'confirm_password' => App::t('form', 'l_cnfpwd')
+            ];
+
+            if ($this->scenario === self::SCENARIO_CART)
+            {
+                $this->attributeLabels['name'] = App::t('form', 'l_name');
+                $this->attributeLabels['surname'] = App::t('form', 'l_surname');
+                $this->attributeLabels['address_1'] = App::t('form', 'l_address_1');
+                $this->attributeLabels['address_2'] = App::t('form', 'l_address_2');
+                $this->attributeLabels['city'] = App::t('form', 'l_city');
+                $this->attributeLabels['phone'] = App::t('form', 'l_phone');
+                $this->attributeLabels['nin'] = App::t('form', 'l_nin');
+            }
         }
 
-        return $labels;
+        return $this->attributeLabels;
+    }
+
+    public function attributeLabel(string $key): string
+    {
+        return $this->attributeLabels()[$key];
     }
 
     /**
@@ -66,13 +74,26 @@ class SignupForm extends Model
      */
     public function signup(string $role = 'customer'): bool
     {
-        if (!($user = $this->createUser($role ?: 'customer')))
+        if (!($user = $this->createUser($role)))
             return false;
 
         $info = new UserInfo();
+        $info->name = '';
+        $info->surname = '';
+        $info->address_1 = '';
+        $info->address_2 = '';
+        $info->city = '';
+        $info->phone = '';
+        $info->nin = '';
         $info->user_id = $user->id;
 
-        return $info->save();
+        if (!$info->save())
+            return false;
+
+        // login the user
+        (new LoginForm())->loginWithoutPassword($user);
+
+        return true;
     }
 
     public function signupWithInfo(): bool
@@ -94,8 +115,7 @@ class SignupForm extends Model
             return false;
 
         // login the user
-        if ($this->scenario === self::SCENARIO_CART)
-            (new LoginForm())->loginWithoutPassword($user);
+        (new LoginForm())->loginWithoutPassword($user);
 
         return true;
     }
@@ -103,7 +123,9 @@ class SignupForm extends Model
     private function createUser(string $role = 'customer'): ?User
     {
         // validate user input
-        if (!$this->validate() || $role !== 'customer' || $role !== 'staff')
+        $this->validate();
+
+        if (!in_array($role, [ 'customer', 'staff' ]))
             return null;
 
         // create a new user

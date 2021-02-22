@@ -35,7 +35,7 @@ class Category extends ActiveRecord
      * Finds category by id
      *
      * @param int $id
-     * @return ActiveRecord
+     * @return ActiveRecord|null
      */
     public static function findById(int $id): ?ActiveRecord
     {

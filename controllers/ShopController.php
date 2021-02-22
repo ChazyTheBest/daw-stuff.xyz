@@ -27,11 +27,6 @@ final class ShopController extends Controller
                         'allow' => true,
                         'actions' => [ 'index', 'search' ],
                         'roles' => [ '?', '@' ]
-                    ],
-                    [
-                        'allow' => true,
-                        'actions' => [ 'create', 'read', 'update', 'delete' ], // CRUD
-                        'roles' => [ 'admin', 'staff' ]
                     ]
                 ]
             ]

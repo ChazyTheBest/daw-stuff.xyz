@@ -2,6 +2,7 @@
 
 namespace controllers;
 
+use Exception;
 use framework\App;
 use framework\UserSession;
 use models\BrowserCart;
@@ -185,10 +186,23 @@ final class ShoppingCartController extends Controller
     {
         $model = new SignupForm();
         $model->scenario = SignupForm::SCENARIO_CART;
-        if ($model->load($_POST))
-            return $model->signupWithInfo()
-                ? $this->redirect('/order/create')
-                : $this->inform(App::t('error', 'signup_failed'));
+
+        if ($this->getIsAjax())
+        {
+            try
+            {
+                $model->load($_POST);
+
+                return $model->signupWithInfo()
+                    ? $this->redirect('/order/create')
+                    : $this->inform(App::t('error', 'signup_failed'));
+            }
+
+            catch (Exception $e)
+            {
+                return $this->error($e);
+            }
+        }
 
         return $this->render('signup', [
             'model' => $model

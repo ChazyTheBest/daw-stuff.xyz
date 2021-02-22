@@ -4,7 +4,7 @@ namespace models;
 
 use framework\App;
 
-class OrderForm extends Model
+class OrderForm extends FormModel
 {
     public int $payment;
 
@@ -20,7 +20,17 @@ class OrderForm extends Model
 
     public function attributeLabels(): array
     {
-        return [ 'payment' => App::t('form', 'l_payment') ];
+        if ($this->attributeLabels === [])
+        {
+            $this->attributeLabels = [ 'payment' => App::t('form', 'l_payment') ];
+        }
+
+        return $this->attributeLabels;
+    }
+
+    public function attributeLabel(string $key): string
+    {
+        return $this->attributeLabels()[$key];
     }
 
     public function generateReference(): string

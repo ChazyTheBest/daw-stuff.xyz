@@ -2,9 +2,10 @@
 
 namespace models;
 
+use Exception;
 use framework\App;
 
-final class LoginForm extends Model
+final class LoginForm extends FormModel
 {
     public string $email;
     public string $password;
@@ -15,18 +16,35 @@ final class LoginForm extends Model
     {
         return [
             // email and password are both required
-            [['email', 'password'], 'required'],
+            [ [ 'email', 'password' ], 'required' ],
+            [ 'email', 'email' ],
+            [ 'email', 'checkUser' ],
             // password is validated by validatePassword()
-            ['password', 'validatePassword'],
+            [ 'password', 'validatePassword' ],
         ];
     }
 
     public function attributeLabels(): array
     {
-        return [
-            'email' => App::t('form', 'l_email'),
-            'password' => App::t('form', 'l_pwd')
-        ];
+        if ($this->attributeLabels === [])
+        {
+            $this->attributeLabels = [
+                'email' => 'Email',
+                'password' => App::t('form', 'l_pwd')
+            ];
+        }
+
+        return $this->attributeLabels;
+    }
+
+    public function attributeLabel(string $key): string
+    {
+        return $this->attributeLabels()[$key];
+    }
+
+    protected function checkUser(): bool
+    {
+        return !$this->getUser() ? false : true;
     }
 
     /**
@@ -35,13 +53,11 @@ final class LoginForm extends Model
      *
      * @param string $password the password currently being validated
      * @return bool whether the user password is valid or not
+     * @throws Exception
      */
-    public function validatePassword(string $password): bool
+    protected function validatePassword(string $password): bool
     {
-        if (!($user = $this->getUser()))
-            return false;
-
-        return $user->validatePassword($password);
+        return $this->getUser()->validatePassword($password);
     }
 
     /**
@@ -51,8 +67,7 @@ final class LoginForm extends Model
      */
     public function login(): bool
     {
-        if (!$this->validate())
-            return false;
+        $this->validate();
 
         $this->loginSuccessful($this->getUser());
 
@@ -68,7 +83,6 @@ final class LoginForm extends Model
     {
         $_SESSION['user_id'] = $user->id;
         $_SESSION['IS_LOGGED_IN'] = TRUE;
-        //$_SESSION['email'] = $this->email;
 
         $user->moveCart();
     }

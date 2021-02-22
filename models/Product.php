@@ -43,7 +43,8 @@ class Product extends ActiveRecord
     public static function findByCategory(int $cat_id, int $page = 0): array
     {
         return parent::findAll([
-            'category_id' => $cat_id
+            'category_id' => $cat_id,
+            'status' => Product::STATUS_ACTIVE
         ], $page);
     }
 
@@ -59,7 +60,8 @@ class Product extends ActiveRecord
     {
         return parent::findAll([
             'category_id' => $cat_id,
-            'subcategory_id' => $sub_id
+            'subcategory_id' => $sub_id,
+            'status' => Product::STATUS_ACTIVE
         ], $page);
     }
 
@@ -67,7 +69,7 @@ class Product extends ActiveRecord
      * Finds products by id
      *
      * @param array $id
-     * @return array|null
+     * @return array
      */
     public static function findManyById(array $id): array
     {
@@ -81,7 +83,7 @@ class Product extends ActiveRecord
      * Finds product by id
      *
      * @param int $id
-     * @return ActiveRecord
+     * @return ActiveRecord|null
      */
     public static function findById(int $id): ?ActiveRecord
     {
@@ -90,30 +92,15 @@ class Product extends ActiveRecord
         ]);
     }
 
-    public static function getAll(int $page = 0): array
+    public static function getAllActive(int $page = 0): array
     {
         return self::findAll([
             'status' => Product::STATUS_ACTIVE
         ], $page);
     }
 
-    public static function getList(): array
+    public static function getAll(): array
     {
-        return (new Product())->custom([
-            'select' => [
-                'product.`id`',
-                'product.`name`',
-                'product.`image`',
-                '`price`',
-                '`discount`',
-                'c.`name` as category',
-                'c2.`name` as subcategory',
-                'product.`status`'
-            ],
-            'leftjoin' => [
-                [ '`category` c', 'on' => [ 'c.`id`' => 'product.`category_id`' ] ],
-                [ '`category` c2', 'on' => [ 'c2.`id`' => '`subcategory_id`' ] ]
-            ]
-        ]);
+        return self::findAll();
     }
 }

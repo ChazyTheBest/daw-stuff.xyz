@@ -4,7 +4,7 @@ namespace models;
 
 use framework\App;
 
-class CategoryForm extends Model
+class CategoryForm extends FormModel
 {
     public ?string $name = null;
     public ?string $description = null;
@@ -22,18 +22,27 @@ class CategoryForm extends Model
 
     public function attributeLabels(): array
     {
-        return [
-            'name' => App::t('form', 'l_name'),
-            'image' => App::t('form', 'l_image'),
-            'description' => App::t('form', 'l_description'),
-            'category_id' => App::t('form', 'l_subcategory')
-        ];
+        if ($this->attributeLabels === [])
+        {
+            $this->attributeLabels = [
+                'name' => App::t('form', 'l_name'),
+                'image' => App::t('form', 'l_image'),
+                'description' => App::t('form', 'l_description'),
+                'category_id' => App::t('form', 'l_subcategory')
+            ];
+        }
+
+        return $this->attributeLabels;
+    }
+
+    public function attributeLabel(string $key): string
+    {
+        return $this->attributeLabels()[$key];
     }
 
     public function create(array $files): bool
     {
-        if (!$this->validate())
-            return false;
+        $this->validate();
 
         $model = new Category();
         $model->name = $this->name;
@@ -47,8 +56,7 @@ class CategoryForm extends Model
 
     public function update(Category $category): bool
     {
-        if (!$this->validate())
-            return false;
+        $this->validate();
 
         $category->name = $this->name;
         $category->description = $this->description;

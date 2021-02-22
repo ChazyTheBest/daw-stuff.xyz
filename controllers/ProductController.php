@@ -2,7 +2,9 @@
 
 namespace controllers;
 
+use Exception;
 use framework\App;
+use models\Category;
 use models\Product;
 use models\ProductForm;
 
@@ -64,12 +66,24 @@ class ProductController extends Controller
 
         if ($this->getIsAjax())
         {
-            if (!isset($_FILES['images']) || !$model->load($_POST))
-                return $this->inform('upload error');
+            if (!isset($_FILES['images']))
+                return $this->inform(App::t('error', 'form_images'));
 
-            return $model->create($_FILES['images'])
-                ? $this->redirect('/product/manage')
-                : $this->inform(App::t('error', 'create_failed'));
+            try
+            {
+                $model->load($_POST);
+
+                $model->scenario = ProductForm::SCENARIO_NEW;
+
+                return $model->create($_FILES['images'])
+                    ? $this->redirect('/product/manage')
+                    : $this->inform(App::t('error', 'create_failed'));
+            }
+
+            catch (Exception $e)
+            {
+                return $this->inform($e->getMessage());
+            }
         }
 
         return $this->render('create', [
@@ -83,13 +97,40 @@ class ProductController extends Controller
         {
             header('Content-type: application/json');
 
+            $categories = [];
+
+            foreach (Category::getAll() as $cat)
+            {
+                $categories[$cat['id']] = [
+                    'name' => $cat['name'],
+                    'subcategories' => []
+                ];
+
+                foreach (Category::getAll($cat['id']) as $sub)
+                {
+                    $categories[$cat['id']]['subcategories'][] = [
+                        'id' => $sub['id'],
+                        'name' => $sub['name']
+                    ];
+                }
+            }
+
+            if (isset($_GET['cat']))
+            {
+                $data = [
+                    'subcategories' => []
+                ];
+            }
+
             return json_encode([
-                'query' => Product::getList(),
+                'query' => Product::getAll(),
                 'texts' => [
                     'title' => [
                         'view' => App::t('table', 'td_view_product'),
                         'delete' => App::t('table', 'td_delete_product')
                     ],
+                    'categories' => $categories,
+                    'none' => App::t('table', 'td_none'),
                     'buttons' => [
                         'names' => [ 'create' => App::t('table', 'btn_create') ],
                         'create' => [ 'url' => '/product/create' ]
@@ -114,15 +155,92 @@ class ProductController extends Controller
 
         if ($this->getIsAjax())
         {
+            // update product images
             if (isset($_FILES['images']))
                 return $model->updateImage($_FILES['images'], $product)
                     ? $this->redirect('/product/manage')
                     : $this->inform(App::t('error', 'upload_failed'));
 
-            if ($model->load(($_POST)))
-                return $model->update($product)
-                    ? $this->redirect('/product/manage')
-                    : $this->inform(App::t('error', 'update_failed'));
+            // enable/disable product
+            else if (isset($_GET['status']))
+            {
+                $status = $_GET['status'];
+                if ($status === 'enable' && $product->status === Product::STATUS_DELETED)
+                {
+                    // enable
+                    $product->enable();
+                }
+
+                else if ($status === 'disable' && $product->status === Product::STATUS_ACTIVE)
+                {
+                    //disable
+                    $product->disable();
+                }
+
+                return $this->redirect('reload');
+            }
+
+            // change category and get subcategories
+            else if (isset($_GET['cat']))
+            {
+                $subcategories = [];
+
+                $cat_id = $_GET['cat'];
+                if ($cat_id !== 'null')
+                {
+                    $category = Category::findById($cat_id);
+                    if (!$category)
+                        return $this->inform(App::t('error', '404_category'));
+
+                    foreach (Category::getAll($cat_id) as $sub)
+                    {
+                        $subcategories[$sub['id']] = [ $sub['name'] ];
+                    }
+                }
+
+                $product->category_id = $cat_id === 'null' ? null : (int) $cat_id;
+                $product->save();
+
+                header('Content-type: application/json');
+                return json_encode([
+                    'message' => App::t('table', 'product_cat'),
+                    'subcategories' => $subcategories
+                ]);
+            }
+
+            // change subcategory
+            else if (isset($_GET['sub']))
+            {
+                $sub_id = $_GET['sub'];
+                if ($sub_id !== 'null')
+                {
+                    $subcategory = Category::findById($sub_id);
+                    if (!$subcategory)
+                        return $this->inform(App::t('error', '404_category'));
+                }
+
+                $product->subcategory_id = $sub_id === 'null' ? null : (int) $sub_id;
+                $product->save();
+
+                return $this->inform(App::t('table', 'product_sub'));
+            }
+
+            else
+            {
+                try
+                {
+                    $model->load($_POST);
+
+                    return $model->update($product)
+                        ? $this->redirect('/product/manage')
+                        : $this->inform(App::t('error', 'update_failed'));
+                }
+
+                catch (Exception $e)
+                {
+                    return $this->inform($e->getMessage());
+                }
+            }
         }
 
         return $this->render('update', [
@@ -142,7 +260,7 @@ class ProductController extends Controller
         if (!$model)
             return $this->inform(App::t('error', '404_product'));
 
-        $model->disable([ 'id' => $id ]);
+        $model->disable();
 
         return $this->redirect('reload');
     }

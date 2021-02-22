@@ -12,7 +12,6 @@ use framework\ActiveRecord;
  * @property string $address_1
  * @property string $address_2
  * @property string $city
- * @property string $postal_code
  * @property string $phone
  * @property string $nin
  * @property int $user_id
@@ -24,7 +23,6 @@ final class UserInfo extends ActiveRecord
     public ?string $address_1 = null;
     public ?string $address_2 = null;
     public ?string $city = null;
-    public ?string $postal_code = null;
     public ?string $phone = null;
     public ?string $nin = null;
     public int $user_id;

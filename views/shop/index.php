@@ -43,7 +43,7 @@ $next = $page + 1;
 <?php foreach (Category::getAll($cat['id']) as $subcat): ?>
                         <a class="list-group-item d-flex justify-content-between align-items-center<?= $subcat['id'] === $sub_id ? ' active' : '' ?>" href="/shop/index/<?= $cat['id'] ?>/<?= $subcat['id'] ?>">
                             <span><?= $subcat['name'] ?></span>
-                            <span class="badge badge-primary badge-pill justify-end">10</span>
+                            <span class="badge badge-primary badge-pill justify-end"><?= $total ?></span>
                         </a>
 <?php endforeach; ?>
                     </div>
@@ -61,7 +61,10 @@ $next = $page + 1;
                 </a>
                 <div class="card-body">
                     <a href="/product/index/<?= $product['id'] ?>"><h5 class="card-title"><?= $product['name'] ?></h5></a>
-                    <p class="card-text"><?= $product['description'] ?></p>
+                    <p class="card-text">
+                        <span><?= $product['description'] ?></span><br>
+                        <span>Price: <?= $product['price'] ?> &euro;</span>
+                    </p>
                     <form class="input-group" action="/shoppingCart/add/<?= $product['id'] ?>" method="POST">
                         <input type="number" class="form-control" name="quantity" min="1" max="999" value="1" aria-label="Recipient's username" aria-describedby="basic-addon2">
                         <div class="input-group-append">

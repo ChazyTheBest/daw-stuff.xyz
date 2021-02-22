@@ -25,7 +25,7 @@ $this->title = 'Payment';
                 </label>
                 <label>
                     Paypal: Pay easy
-                    <input type="radio" name="OrderForm[payment]" value="1">
+                    <input type="radio" name="OrderForm[payment]" value="2">
                 </label>
 
                 <input type="submit" value="Pay">

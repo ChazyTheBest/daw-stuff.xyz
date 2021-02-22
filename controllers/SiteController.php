@@ -2,6 +2,7 @@
 
 namespace controllers;
 
+use Exception;
 use framework\App;
 use models\LoginForm;
 
@@ -34,7 +35,7 @@ final class SiteController extends Controller
                         'roles' => [ '@' ]
                     ],
                     [
-                        'actions' => [ 'index', 'error' ],
+                        'actions' => [ 'index' ],
                         'allow' => true,
                         'roles' => [ '?', '@' ]
                     ]
@@ -63,13 +64,23 @@ final class SiteController extends Controller
     public function actionLogin(): string
     {
         $model = new LoginForm();
-        if ($model->load($_POST))
-            return $model->login()
-                ? $this->redirect('home')
-                : $this->inform(App::t('error', 'login_failed'));
 
-        // is this really necessary?
-        //$model->password = '';
+        if ($this->getIsAjax())
+        {
+            try
+            {
+                $model->load($_POST);
+
+                return $model->login()
+                    ? $this->redirect('home')
+                    : $this->inform(App::t('error', 'login_failed'));
+            }
+
+            catch (Exception $e)
+            {
+                return $this->inform($e->getMessage());
+            }
+        }
 
         return $this->render('login', [
             'model' => $model

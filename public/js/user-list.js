@@ -22,11 +22,12 @@ $(function()
                 targets: 4,
                 data: null,
                 render: function ( data ) {
-                    let html = '<select class="custom-select" style="width:auto;">'
-                    for (let i in texts.status)
-                    {
+                    let html = '<select class="custom-select" style="width:auto;">';
+
+                    Object.keys(texts.status).forEach(function (i) {
                         html += '<option value="' + i + '"' + (data.status === parseInt(i) ? ' selected' : '') + '>' + texts.status[i] + '</option>';
-                    }
+                    });
+
                     return html + '</select>';
                 },
                 createdCell: function ( td, cellData, rowData, row, col ) {

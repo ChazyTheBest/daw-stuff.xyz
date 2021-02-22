@@ -20,6 +20,7 @@ return
     'th_created_by' => 'Created By',
 
     // data
+    'td_none' => 'None',
     'td_status_0' => 'Deleted',
     'td_status_1' => 'Pending',
     'td_status_2' => 'Awaiting',
@@ -51,8 +52,10 @@ return
     'btn_sub' => 'Subcategory',
     'btn_staff' => 'Staff',
     'btn_customers' => 'Customers',
-    '' => '',
-    '' => '',
+
+    // alerts
+    'product_cat' => 'The product has been moved to the selected category.',
+    'product_sub' => 'The product has been moved to the selected subcategory.',
     '' => '',
     '' => '',
     '' => '',

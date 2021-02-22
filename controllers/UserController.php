@@ -57,15 +57,27 @@ final class UserController extends Controller
      * Displays the signup page and creates a new user.
      *
      * @return mixed
-     * @throws Exception
      */
     public function actionSignup(): string
     {
         $model = new SignupForm();
-        if ($this->getIsAjax() && $model->load($_POST))
-            return $model->signup()
-                ? $this->redirect('home')
-                : $this->inform(App::t('error', 'signup_failed'));
+
+        if ($this->getIsAjax())
+        {
+            try
+            {
+                $model->load($_POST);
+
+                return $model->signup()
+                    ? $this->redirect('home')
+                    : $this->inform(App::t('error', 'signup_failed'));
+            }
+
+            catch (Exception $e)
+            {
+                return $this->inform($e->getMessage());
+            }
+        }
 
         return $this->render('signup', [
             'model' => $model
@@ -75,10 +87,23 @@ final class UserController extends Controller
     public function actionSignupstaff(): string
     {
         $model = new SignupForm();
-        if ($this->getIsAjax() && $model->load($_POST))
-            return $model->signup(App::$user->role === 'admin' ? $_GET['role'] : '')
-                ? $this->redirect('home')
-                : $this->inform(App::t('error', 'signup_failed'));
+
+        if ($this->getIsAjax())
+        {
+            try
+            {
+                $model->load($_POST);
+
+                return $model->signup(App::$user->role === 'admin' ? $_GET['role'] : '')
+                    ? $this->redirect('home')
+                    : $this->inform(App::t('error', 'signup_failed'));
+            }
+
+            catch (Exception $e)
+            {
+                return $this->inform($e->getMessage());
+            }
+        }
 
         return $this->render('signup', [
             'model' => $model
@@ -88,10 +113,23 @@ final class UserController extends Controller
     public function actionUpdate(): string
     {
         $model = new UserInfoForm();
-        if ($this->getIsAjax() && $model->load($_POST))
-            return $model->update()
-                ? $this->redirect('reload')
-                : $this->inform(App::t('error', 'update_failed'));
+
+        if ($this->getIsAjax())
+        {
+            try
+            {
+                $model->load($_POST);
+
+                return $model->update()
+                    ? $this->redirect('reload')
+                    : $this->inform(App::t('error', 'update_failed'));
+            }
+
+            catch (Exception $e)
+            {
+                return $this->inform($e->getMessage());
+            }
+        }
 
         return $this->render('update', [
             'model' => $model
@@ -180,10 +218,23 @@ final class UserController extends Controller
             return $this->error('403');
 
         $model = new UserInfoForm();
-        if ($this->getIsAjax() && $model->load($_POST))
-            return $model->update($id)
-                ? $this->redirect('reload')
-                : $this->inform(App::t('error', 'update_failed'));
+
+        if ($this->getIsAjax())
+        {
+            try
+            {
+                $model->load($_POST);
+
+                return $model->update($id)
+                    ? $this->redirect('reload')
+                    : $this->inform(App::t('error', 'update_failed'));
+            }
+
+            catch (Exception $e)
+            {
+                return $this->inform($e->getMessage());
+            }
+        }
 
         return $this->render('view', [
             'model' => $model,

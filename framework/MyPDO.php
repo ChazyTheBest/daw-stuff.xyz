@@ -9,7 +9,7 @@ class MyPDO
     private static ?PDO $pdo = null;
 
     // use the same instance across runtime
-    public static function getPDO(): PDO
+    public static function &getPDO(): PDO
     {
         if (!self::$pdo)
         {

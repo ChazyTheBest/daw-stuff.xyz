@@ -4,7 +4,6 @@ CREATE TABLE `user_info` (
     `address_1` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     `address_2` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     `city` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-    `postal_code` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     `phone` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     `nin` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
     `user_id` int(11) NOT NULL DEFAULT 0,

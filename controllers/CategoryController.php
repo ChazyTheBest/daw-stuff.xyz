@@ -2,6 +2,7 @@
 
 namespace controllers;
 
+use Exception;
 use framework\App;
 use models\Category;
 use models\CategoryForm;
@@ -34,10 +35,26 @@ class CategoryController extends Controller
     public function actionCreate(): string
     {
         $model = new CategoryForm();
-        if ($this->getIsAjax() && isset($_FILES['images']) && $model->load($_POST))
-            return $model->create($_FILES['images'])
-                ? $this->redirect('/category/manage')
-                : $this->inform(App::t('error', 'create_failed'));
+
+        if ($this->getIsAjax())
+        {
+            if (!isset($_FILES['images']))
+                return $this->inform(App::t('error', 'form_images'));
+
+            try
+            {
+                $model->load($_POST);
+
+                return $model->create($_FILES['images'])
+                    ? $this->redirect('/category/manage')
+                    : $this->inform(App::t('error', 'create_failed'));
+            }
+
+            catch (Exception $e)
+            {
+                return $this->inform($e->getMessage());
+            }
+        }
 
         return $this->render('create', [
             'model' => $model
@@ -87,7 +104,7 @@ class CategoryController extends Controller
         return $this->render('manage');
     }
 
-    public function actionUpdate(int $id): string
+    public function actionUpdate(?int $id): string
     {
         $category = Category::findById($id);
         if (!$category || !$category instanceof Category)
@@ -104,10 +121,22 @@ class CategoryController extends Controller
                     ? $this->redirect('/category/manage')
                     : $this->inform(App::t('error', 'upload_failed'));
 
-            if ($model->load(($_POST)))
-                return $model->update($category)
-                    ? $this->redirect('/category/manage')
-                    : $this->inform(App::t('error', 'update_failed'));
+            else
+            {
+                try
+                {
+                    $model->load($_POST);
+
+                    return $model->update($category)
+                        ? $this->redirect('/category/manage')
+                        : $this->inform(App::t('error', 'update_failed'));
+                }
+
+                catch (Exception $e)
+                {
+                    return $this->inform($e->getMessage());
+                }
+            }
         }
 
         return $this->render('update', [
@@ -124,7 +153,7 @@ class CategoryController extends Controller
             ]);
 
         $model = Category::findById($id);
-        if (!$model || !$model instanceof Category)
+        if (!$model)
             return $this->inform(App::t('error', '404_category'));
 
         $model->disable([ 'id' => $id ]);

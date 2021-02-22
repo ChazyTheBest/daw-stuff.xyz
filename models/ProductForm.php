@@ -4,8 +4,10 @@ namespace models;
 
 use framework\App;
 
-class ProductForm extends Model
+class ProductForm extends FormModel
 {
+    const SCENARIO_NEW = 0;
+
     public ?string $name = null;
     public ?string $description = null;
     public ?string $price = null;
@@ -21,28 +23,37 @@ class ProductForm extends Model
             [ [ 'name', 'description' ], 'string', 'max' => 100 ],
             [ 'price', 'decimal', [ 8,2 ] ],
             [ 'discount', 'decimal', [ 4,3 ] ],
-            [ 'category', 'int', 'check' => function(int $id) { return Category::findById($id); } ],
-            [ 'subcategory', 'int', 'check' => function(int $id) { return Category::findById($id); } ],
+            [ 'category', 'int', 'check' => function(int $id) { return Category::findById($id); }, 'on' => self::SCENARIO_NEW ],
+            [ 'subcategory', 'int', 'check' => function(int $id) { return Category::findById($id); }, 'on' =>self::SCENARIO_NEW ],
         ];
     }
 
     public function attributeLabels(): array
     {
-        return [
-            'name' => App::t('form', 'l_name'),
-            'description' => App::t('form', 'l_description'),
-            'image' => App::t('form', 'l_image'),
-            'price' => App::t('form', 'l_price'),
-            'discount' => App::t('form', 'l_discount'),
-            'category' => App::t('form', 'l_category'),
-            'subcategory' => App::t('form', 'l_subcategory')
-        ];
+        if ($this->attributeLabels === [])
+        {
+            $this->attributeLabels = [
+                'name' => App::t('form', 'l_name'),
+                'description' => App::t('form', 'l_description'),
+                'image' => App::t('form', 'l_image'),
+                'price' => App::t('form', 'l_price'),
+                'discount' => App::t('form', 'l_discount'),
+                'category' => App::t('form', 'l_category'),
+                'subcategory' => App::t('form', 'l_subcategory')
+            ];
+        }
+
+        return $this->attributeLabels;
+    }
+
+    public function attributeLabel(string $key): string
+    {
+        return $this->attributeLabels()[$key];
     }
 
     public function create(array $files): bool
     {
-        if (!$this->validate())
-            return false;
+        $this->validate();
 
         $model = new Product();
         $model->name = $this->name;
@@ -59,15 +70,12 @@ class ProductForm extends Model
 
     public function update(Product $product): bool
     {
-        if (!$this->validate())
-            return false;
+        $this->validate();
 
         $product->name = $this->name;
         $product->description = $this->description;
         $product->price = $this->price;
         $product->discount = $this->discount ?: 0;
-        $product->category_id = $this->category ?: null;
-        $product->subcategory_id = $this->subcategory ?: null;
 
         return $product->save();
     }

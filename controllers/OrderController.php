@@ -87,7 +87,6 @@ class OrderController extends Controller
      * Displays the create page and creates a new order.
      *
      * @return mixed
-     * @throws Exception
      */
     public function actionCreate(): string
     {
@@ -98,8 +97,15 @@ class OrderController extends Controller
 
         if ($this->getIsAjax()) // TODO: implement transactions
         {
-            if (!$model->load($_POST))
-                return $this->inform(App::t('error', 'model_load'));
+            try
+            {
+                $model->load($_POST);
+            }
+
+            catch (Exception $e)
+            {
+                return $this->inform($e->getMessage());
+            }
 
             $cart = new UserCart();
             $data = $cart->getCartItems();

@@ -2,11 +2,13 @@
 
 namespace models;
 
+use Exception;
 use framework\App;
 
-abstract class Model
+abstract class FormModel
 {
     protected string $formName;
+    protected array $attributeLabels = [];
     public int $scenario = -1;
 
     public function __construct()
@@ -14,28 +16,26 @@ abstract class Model
         $this->formName = explode('\\', get_class($this))[1];
     }
 
-    public function load(array $data): bool
+    public function load(array $data): void
     {
-        if (isset($data[$this->formName]))
-            return $this->populate($data[$this->formName]);
+        if (!isset($data[$this->formName]))
+            throw new Exception(App::t('error', 'form_unk_err'));
 
-        return false;
+        $this->populate($data[$this->formName]);
     }
 
-    private function populate(array $data): bool
+    private function populate(array $data): void
     {
         foreach($this->attributeLabels() as $key => $value)
         {
             if (!isset($data[$key]))
-                return false;
+                throw new Exception(App::t('error', 'form_missing_field', [ strtolower($this->attributeLabel($key)) ]));
 
             $this->$key = $data[$key];
         }
-
-        return true;
     }
 
-    public function validate(): bool
+    public function validate(): void
     {
         foreach ($this->rules() as $rule)
         {
@@ -49,19 +49,15 @@ abstract class Model
                             continue 2;
                     }
 
-                    if (!$this->checkProp($prop, $rule))
-                        return false;
+                    $this->checkProp($prop, $rule);
                 }
             }
 
             else
             {
-                if (!$this->checkProp($rule[0], $rule))
-                    return false;
+                $this->checkProp($rule[0], $rule);
             }
         }
-
-        return true;
     }
 
     private function checkScenario(int $scenario): bool
@@ -69,17 +65,17 @@ abstract class Model
         return $this->scenario === $scenario;
     }
 
-    private function checkProp(string $prop, array $rule): bool
+    private function checkProp(string $prop, array $rule): void
     {
         if (!property_exists($this, $prop))
-            return false;
+            throw new Exception(App::t('error', 'form_unk_err'));
 
         switch ($rule[1])
         {
             case 'required':
             {
                 if ($this->$prop === '' || $this->$prop === null)
-                    return false;
+                    throw new Exception(App::t('error', 'form_required', [ strtolower($this->attributeLabel($prop)) ]));
 
                 break;
             }
@@ -89,10 +85,10 @@ abstract class Model
                     break;
 
                 if (isset($rule['max']) && mb_strlen($this->$prop) > $rule['max'])
-                    return false;
+                    throw new Exception(App::t('error', 'form_string_max', [ strtolower($this->attributeLabel($prop)) ]));
 
                 else if (isset($rule['min']) && mb_strlen($this->$prop) < $rule['min'])
-                    return false;
+                    throw new Exception(App::t('error', 'form_string_min', [ strtolower($this->attributeLabel($prop)) ]));
 
                 break;
             }
@@ -102,13 +98,13 @@ abstract class Model
                     break;
 
                 if (!is_numeric($this->$prop) || is_double($this->$prop))
-                    return false;
+                    throw new Exception(App::t('error', 'form_int', [ strtolower($this->attributeLabel($prop)) ]));
 
                 if (isset($rule['matches']) && !in_array((int)$this->$prop, $rule['matches'], true)) // prevent coercion
-                    return false;
+                    throw new Exception(App::t('error', 'form_int_match', [ strtolower($this->attributeLabel($prop)) ]));
 
                 else if (isset($rule['check']) && !$rule['check']($this->$prop))
-                    return false;
+                    throw new Exception(App::t('error', 'form_int_check', [ strtolower($this->attributeLabel($prop)) ]));
 
                 break;
             }
@@ -118,7 +114,7 @@ abstract class Model
                     break;
 
                 if (!is_float($this->$prop + 0))
-                    return false;
+                    throw new Exception(App::t('error', 'form_decimal', [ strtolower($this->attributeLabel($prop)) ]));
 
                 // todo check size and decimal places
 
@@ -133,7 +129,7 @@ abstract class Model
             case 'email':
             {
                 if (!filter_var($this->$prop, FILTER_VALIDATE_EMAIL))
-                    return false;
+                    throw new Exception(App::t('error', 'form_email'));
 
                 break;
             }
@@ -145,13 +141,13 @@ abstract class Model
                 $methodName = 'findBy' . ucfirst($prop);
 
                 if (!isset($rule['targetClass']) && !$this->checkMethod($rule['targetClass'], $methodName))
-                    return false;
+                    throw new Exception(App::t('error', 'form_unk_err'));
 
                 $model = [ $rule['targetClass'], $methodName ]($this->$prop);
 
                 // must be unique       redundant?
                 if ($model && $model->$prop === $this->$prop)
-                    return false;
+                    throw new Exception(App::t('error', 'form_unique', [ strtolower($this->attributeLabel($prop)) ]));
 
                 break;
             }
@@ -162,11 +158,11 @@ abstract class Model
 
                 // custom validation method
                 if ($this->checkMethod($this, $rule[1]) && ![ $this, $rule[1] ]($this->$prop))
-                    return false;
+                    throw new Exception(App::t('error', in_array($prop, [ 'email', 'password' ])
+                                                                    ? 'form_login'
+                                                                    : 'form_valid', [ strtolower($this->attributeLabel($prop)) ]));
             }
         }
-
-        return true;
     }
 
     private function checkMethod($obj_or_class, string $name): bool
@@ -189,4 +185,8 @@ abstract class Model
 
         return $fields;
     }
+
+    abstract function rules(): array;
+    abstract public function attributeLabels(): array;
+    abstract public function attributeLabel(string $key): string;
 }
