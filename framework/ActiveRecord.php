@@ -118,7 +118,7 @@ abstract class ActiveRecord
         $this->disable($status);
     }
 
-    protected static function count(array $cond = [], string $cols = '*'): int
+    public static function count(array $cond = [], string $cols = '*'): int
     {
         $pdo = MyPDO::getPDO();
         $query = "SELECT COUNT($cols) FROM `" . static::tableName() . '`';
